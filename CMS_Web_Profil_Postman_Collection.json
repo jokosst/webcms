@@ -1,0 +1,486 @@
+{
+	"info": {
+		"_postman_id": "9ed8ff38-1959-4f24-9401-933b27669ad0",
+		"name": "CMS Web Profil - Headless REST API v1",
+		"description": "Koleksi Postman REST API Publik v1 untuk CMS Web Profil Perusahaan. Dapat di-import langsung ke Postman.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://cms.test",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Company Profile",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1/company-profile",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"company-profile"
+					]
+				},
+				"description": "Mengambil data identitas utama perusahaan (Nama, Logo, Favicon, Visi Misi, Kontak, Alamat, Embed Maps, Sosmed)."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Hero Banners",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1/hero-banners",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"hero-banners"
+					]
+				},
+				"description": "Mengambil daftar hero banner slider aktif di halaman utama."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							]
+						},
+						"description": "Mengambil seluruh kategori (artikel, layanan, portofolio)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Categories by Type (e.g. article)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories?type=article",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "article",
+									"description": "Tipe kategori: article, service, atau portfolio"
+								}
+							]
+						},
+						"description": "Mengambil kategori terfilter berdasarkan tipe."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Services / Layanan",
+			"item": [
+				{
+					"name": "Get All Active Services",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/services",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services"
+							]
+						},
+						"description": "Mengambil daftar seluruh layanan/produk perusahaan."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Detail by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/services/web-development",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"services",
+								"web-development"
+							]
+						},
+						"description": "Mengambil rincian detail layanan tertentu berdasarkan slug."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Portfolios / Proyek",
+			"item": [
+				{
+					"name": "Get All Portfolios (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/portfolios?per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"portfolios"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Mengambil daftar portofolio proyek terpaginasi."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Portfolios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/portfolios?featured=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"portfolios"
+							],
+							"query": [
+								{
+									"key": "featured",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Mengambil daftar proyek unggulan saja."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Portfolio Detail by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/portfolios/sistem-informasi-logistik",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"portfolios",
+								"sistem-informasi-logistik"
+							]
+						},
+						"description": "Mengambil detail rincian portofolio berdasarkan slug."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Articles & Comments",
+			"item": [
+				{
+					"name": "Get Published Articles (Paginated & Search)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/articles?search=cloud&per_page=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"articles"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "cloud",
+									"description": "Pencarian kata kunci artikel"
+								},
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Mengambil artikel terpublikasi dengan opsi pencarian & paginasi."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Article Detail by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/articles/tren-teknologi-cloud-2026",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"articles",
+								"tren-teknologi-cloud-2026"
+							]
+						},
+						"description": "Mengambil rincian artikel berdasarkan slug dan otomatis menaikkan counter views."
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Article Comment (Public)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Pembaca Web\",\n    \"email\": \"pembaca@example.com\",\n    \"comment\": \"Artikel yang sangat informatif dan bermanfaat!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/articles/1/comment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"articles",
+								"1",
+								"comment"
+							]
+						},
+						"description": "Mengirimkan komentar pembaca pada artikel."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Team Members",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1/team-members",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"team-members"
+					]
+				},
+				"description": "Mengambil daftar anggota tim dan manajemen perusahaan."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Testimonials",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1/testimonials",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"testimonials"
+					]
+				},
+				"description": "Mengambil daftar ulasan dan testimoni klien."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Contact Form Submission (Leads)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Calon Klien\",\n    \"email\": \"klien@example.com\",\n    \"phone\": \"08123456789\",\n    \"subject\": \"Tanya Layanan Custom Software\",\n    \"message\": \"Halo, kami tertarik untuk berkonsultasi mengenai pembuatan aplikasi enterprise.\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/contact",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"contact"
+					]
+				},
+				"description": "Mengirimkan pesan dari form kontak web profil ke Inbox Admin CMS."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Site Settings",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1/settings",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"settings"
+					]
+				},
+				"description": "Mengambil konfigurasi SEO global, Google Analytics ID, dan opsi situs."
+			},
+			"response": []
+		}
+	]
+}
