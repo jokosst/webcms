@@ -30,8 +30,11 @@ class ProfileController extends Controller
             $google2fa = new Google2FA();
             $secretKey = $user->two_factor_secret;
             
+            $company = \App\Models\CompanyProfile::first();
+            $appName = $company->company_name ?? config('app.name', 'UPA. TIK');
+
             $qrCodeUrl = $google2fa->getQRCodeUrl(
-                config('app.name', 'Admin CMS'),
+                $appName,
                 $user->email,
                 $secretKey
             );

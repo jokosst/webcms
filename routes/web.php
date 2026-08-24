@@ -103,7 +103,10 @@ Route::prefix('dalam')->name('admin.')->group(function () {
 
             // Inbox Leads
             Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
+            Route::get('/inbox/export/excel', [InboxController::class, 'exportExcel'])->name('inbox.export.excel');
+            Route::get('/inbox/export/pdf', [InboxController::class, 'exportPdf'])->name('inbox.export.pdf');
             Route::get('/inbox/{inboxLead}', [InboxController::class, 'show'])->name('inbox.show');
+            Route::post('/inbox/{inboxLead}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
             Route::patch('/inbox/{inboxLead}/status', [InboxController::class, 'updateStatus'])->name('inbox.status');
             Route::delete('/inbox/{inboxLead}', [InboxController::class, 'destroy'])->name('inbox.destroy');
 
