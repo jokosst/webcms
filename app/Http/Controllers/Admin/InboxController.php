@@ -61,21 +61,90 @@ class InboxController extends Controller
         ]);
 
         try {
-            Mail::to($inboxLead->email)->send(new InboxReplyMail(
-                $validated['subject'],
-                $validated['reply_message'],
-                $inboxLead
-            ));
+            $mailerDriver = config('mail.default', env('MAIL_MAILER', 'smtp'));
 
-            $inboxLead->update(['status' => 'replied']);
+            if ($mailerDriver === 'gmail_api' || config('services.gmail.refresh_token') || env('GMAIL_REFRESH_TOKEN')) {
+                // Send email via Gmail API REST HTTP Endpoint (HTTPS Port 443)
+                $gmailApi = new \App\Services\GmailApiService();
+                $htmlContent = view('emails.inbox_reply', [
+                    'replySubject' => $validated['subject'],
+                    'replyMessage' => $validated['reply_message'],
+                    'lead' => $inboxLead,
+                    'profile' => \App\Models\CompanyProfile::first(),
+                ])->render();
+
+                $gmailApi->sendEmail($inboxLead->email, $validated['subject'], $htmlContent);
+            } else {
+                // Send email via standard SMTP
+                Mail::to($inboxLead->email)->send(new InboxReplyMail(
+                    $validated['subject'],
+                    $validated['reply_message'],
+                    $inboxLead
+                ));
+            }
+
+            $inboxLead->update([
+                'status' => 'replied',
+                'reply_subject' => $validated['subject'],
+                'reply_message' => $validated['reply_message'],
+                'replied_at' => now(),
+            ]);
 
             return redirect()->route('admin.inbox.show', $inboxLead->id)
-                ->with('success', 'Email balasan berhasil dikirim ke ' . $inboxLead->email . ' dan status berhasil diperbarui menjadi Replied.');
+                ->with('success', 'Email balasan berhasil dikirim ke ' . $inboxLead->email . ' dan status berhasil diperbarui.');
         } catch (\Throwable $e) {
             return redirect()->route('admin.inbox.show', $inboxLead->id)
                 ->withInput()
-                ->with('error', 'Gagal mengirim email balasan: ' . $e->getMessage() . '. Harap periksa pengaturan SMTP di file .env.');
+                ->with('error', 'Gagal mengirim email balasan: ' . $e->getMessage());
         }
+    }
+
+    public function replyGmailWeb(Request $request, InboxLead $inboxLead): RedirectResponse
+    {
+        $validated = $request->validate([
+            'subject' => 'nullable|string|max:255',
+            'reply_message' => 'nullable|string|max:5000',
+        ]);
+
+        $profile = CompanyProfile::first();
+        $companyName = $profile->company_name ?? 'UPA. TIK UNTAN';
+        $tagline = $profile->tagline ?? 'Pusat Pengelolaan Sistem Informasi & Jaringan';
+
+        $subject = !empty($validated['subject']) ? $validated['subject'] : ('Re: ' . ($inboxLead->subject ?? 'Tanggapan Pesan Helpdesk'));
+        $replyMessage = !empty($validated['reply_message']) ? $validated['reply_message'] : 'Terima kasih telah menghubungi kami. Mengenai pesan yang Anda sampaikan, berikut tanggapan dari tim kami.';
+
+        $body = "Halo {$inboxLead->name},\n\n";
+        $body .= "{$replyMessage}\n\n";
+        $body .= "==================================================\n";
+        $body .= "{$companyName}\n";
+        $body .= "{$tagline}\n";
+        $body .= "© " . date('Y') . " {$companyName}. All rights reserved.\n\n";
+        $body .= "--- Pesan Asal Anda ---\n";
+        $body .= "Subjek : " . ($inboxLead->subject ?? '-') . "\n";
+        $body .= "Tanggal: " . $inboxLead->created_at->format('d M Y, H:i') . " WIB\n";
+        $body .= "\"" . $inboxLead->message . "\"\n";
+
+        // Update lead status and save reply details in database
+        $inboxLead->update([
+            'status' => 'replied',
+            'reply_subject' => $subject,
+            'reply_message' => $replyMessage,
+            'replied_at' => now(),
+        ]);
+
+        // Fetch Gmail user email from env or config
+        $gmailUser = config('services.gmail.user_email') ?: env('GMAIL_USER_EMAIL', 'tik@untan.ac.id');
+        
+        $composeUrl = "https://mail.google.com/mail/?view=cm&fs=1"
+            . "&to=" . urlencode($inboxLead->email)
+            . "&su=" . urlencode($subject)
+            . "&body=" . urlencode($body);
+
+        // Google Account Chooser URL forces Google Accounts to select/switch to tik@untan.ac.id
+        $accountChooserUrl = "https://accounts.google.com/AccountChooser?Email=" . urlencode($gmailUser)
+            . "&continue=" . urlencode($composeUrl);
+
+        return redirect()->away($accountChooserUrl);
     }
 
     public function updateStatus(Request $request, InboxLead $inboxLead): RedirectResponse

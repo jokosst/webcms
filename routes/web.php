@@ -107,6 +107,7 @@ Route::prefix('dalam')->name('admin.')->group(function () {
             Route::get('/inbox/export/pdf', [InboxController::class, 'exportPdf'])->name('inbox.export.pdf');
             Route::get('/inbox/{inboxLead}', [InboxController::class, 'show'])->name('inbox.show');
             Route::post('/inbox/{inboxLead}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
+            Route::post('/inbox/{inboxLead}/reply-gmail-web', [InboxController::class, 'replyGmailWeb'])->name('inbox.reply-gmail-web');
             Route::patch('/inbox/{inboxLead}/status', [InboxController::class, 'updateStatus'])->name('inbox.status');
             Route::delete('/inbox/{inboxLead}', [InboxController::class, 'destroy'])->name('inbox.destroy');
 

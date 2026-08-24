@@ -16,6 +16,13 @@ class InboxLead extends Model
         'subject',
         'message',
         'status',
+        'reply_subject',
+        'reply_message',
+        'replied_at',
         'ip_address',
+    ];
+
+    protected $casts = [
+        'replied_at' => 'datetime',
     ];
 }
