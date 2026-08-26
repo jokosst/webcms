@@ -12,6 +12,7 @@ Dilengkapi dengan antarmuka publik yang elegan dan responsif, panel administrasi
 - [Struktur Direktori Proyek](#-struktur-direktori-proyek)
 - [Fitur Utama Web Publik (Frontend)](#-fitur-utama-web-publik-frontend)
 - [Fitur Utama Admin Panel (Backend)](#-fitur-utama-admin-panel-backend)
+- [Asisten IT Helpdesk & Integrasi Google Gemini AI](#-asisten-it-helpdesk--integrasi-google-gemini-ai)
 - [Keamanan Sistem & Autentikasi](#-keamanan-sistem--autentikasi)
 - [Headless REST API v1](#-headless-rest-api-v1)
 - [Panduan Instalasi & Menjalankan Proyek](#-panduan-instalasi--menjalankan-proyek)
@@ -152,7 +153,12 @@ cms/
     - Kirim pesan atau tiket kendala teknis secara langsung.
     - Dilengkapi **Anti-Bot Math Captcha** untuk mencegah spam otomatis.
     - Pencatatan IP Address pengirim untuk keamanan.
-12. **Multibahasa (ID / EN)**:
+12. **Asisten Virtual IT Helpdesk (Interactive Chatbot & AI Assistant)**:
+    - Antarmuka obrolan terpusat modern (*centered modal*) dengan *backdrop blur*.
+    - Menjawab pertanyaan seputar layanan kampus secara instan (didukung Google Gemini AI atau pencarian cerdas FAQ).
+    - **Pelacakan Status Tiket Terintegrasi**: Pengunjung cukup mengetik nomor tiket (misal: `TKT-00005` atau `lacak tiket 5`) untuk melihat progres penanganan dan balasan resmi petugas.
+    - **Eskalasi Tiket Cepat**: Jika solusi tidak ditemukan, bot otomatis menawarkan formulir pembuatan tiket bantuan dengan proteksi captcha & honeypot.
+13. **Multibahasa (ID / EN)**:
     - Penggantian bahasa langsung melalui rute `/lang/{locale}`.
 
 ---
@@ -173,7 +179,7 @@ Panel admin dapat diakses melalui rute aman terproteksi (`/dalam`) dengan desain
 - **Kategori**: Kelola master kategori untuk artikel, layanan, dan portofolio.
 - **Layanan & Portofolio**: Kelola katalog layanan IT dan portofolio proyek lengkap dengan urutan tampilan.
 - **Tim & Testimoni**: Kelola profil anggota tim dan review dari mitra/klien.
-- **FAQ**: Kelola daftar pertanyaan dan jawaban yang tampil di web.
+- **FAQ & Basis Pengetahuan Chatbot**: Kelola daftar pertanyaan dan jawaban resmi instansi. Mendukung fitur **Impor & Ekspor (JSON & Excel/CSV)** dengan *Smart Fuzzy Column Parser*, pilihan penempatan (*Khusus Data Dukung Chatbot* vs *Tampil di Web Publik*), unduh template, dan sakelar 1-klik status tayang.
 
 ### 3. Inbox Pesan & Tiket Helpdesk
 - Filter pesan berdasarkan status (*Unread*, *Read*, *Replied*) dan pencarian kata kunci.
@@ -184,9 +190,41 @@ Panel admin dapat diakses melalui rute aman terproteksi (`/dalam`) dengan desain
   - Ekspor ke file **Excel / CSV** dengan dukungan format UTF-8 BOM.
   - Ekspor dokumen siap cetak **PDF**.
 
-### 4. Pengaturan Sistem & SEO
+### 4. Riwayat & Analitik Chatbot (*Chat Logs & Continuous Learning*)
+- **Monitoring Percakapan Real-Time**: Pencatatan otomatis setiap pertanyaan yang masuk dari web publik beserta sumber jawabannya (*Gemini AI*, *FAQ Database*, *Sapaan*, *Pelacakan Tiket*, *Fallback*).
+- **Statistik & Metrik**: Total percakapan, tingkat keberhasilan jawaban (% sukses), dan deteksi otomatis pertanyaan yang belum terjawab.
+- **1-Click Convert to FAQ**: Tombol instan untuk langsung mengubah pertanyaan pengunjung yang belum terjawab menjadi butir FAQ resmi instansi.
+- **Ekspor Riwayat**: Ekspor log percakapan ke format CSV/Excel dan alat pembersihan log lama (*log purging*).
+
+### 5. Pengaturan Sistem, SEO & AI Chatbot
 - Konfigurasi judul situs default, meta description global, meta keywords, dan Google Analytics ID.
-- Manajemen akun pengguna: Tambah pengguna, set peran (*Superadmin* vs *Editor*), dan aktivasi akun.
+- **Konfigurasi Master Asisten Chatbot**: Sakelar On/Off, nama tampilan bot, tagline, dan pesan pembuka.
+- **Integrasi Google Gemini AI**: Manajemen API Key, pemilihan model AI (`gemini-3.6-flash`), kustomisasi instruksi kepribadian (*System Prompt*), dan tombol uji konektivitas API real-time.
+- Manajemen akun pengguna: Tambah pengguna, set peran (*Superadmin*, *Helpdesk*, *Editor*), dan aktivasi akun.
+
+---
+
+## 🤖 Asisten IT Helpdesk & Integrasi Google Gemini AI
+
+Sistem dilengkapi modul chatbot cerdas yang dapat beroperasi dalam dua mode:
+
+```mermaid
+flowchart TD
+    A[Pengunjung Bertanya di Chatbot] --> B{Mode AI Aktif?}
+    B -->|Ya (Gemini AI)| C[Google Gemini 3.6 Flash API]
+    C -->|Grounded Context| D[Data FAQ Resmi & Info TIK Kampus]
+    D --> E[Jawaban AI yang Ramah, Luwes & Akurat]
+    C -.->|Koneksi Error / Timeout / Port Block| F[Auto Fallback: Semantic FAQ Matcher]
+    B -->|Tidak (Lokal)| F
+    F --> G[Jawaban dari Database FAQ CMS]
+```
+
+### Keunggulan Modul Chatbot:
+1. **Grounded Generative AI (*Anti-Hallucination*)**: Jawaban AI dikunci pada data FAQ resmi dan profil layanan instansi, memastikan akurasi informasi tanpa mengarang data palsu.
+2. **Fail-Safe Fallback Protection**: Jika koneksi internet hosting terputus, kuota API habis, atau port diblokir, sistem **secara otomatis dan senyap (*silent fallback*)** beralih menggunakan pencarian FAQ lokal. Pengunjung tidak akan pernah melihat error.
+3. **Conversational Small-Talk & Greeting Engine**: Mampu merespon sapaan waktu otomatis (*Pagi/Siang/Sore/Malam*), salam Islami, ucapan terima kasih, konfirmasi ramah, dan pertanyaan identitas bot secara natural.
+4. **Pelacakan Status Tiket (*Ticket Tracking*)**: Parsing nomor tiket otomatis (`TKT-00005`), menampilkan status penanganan (*Menunggu / Diproses / Dibalas*), pemohon tersensor, dan balasan petugas helpdesk.
+5. **Proteksi Anti-Bot & Spam**: Verifikasi Captcha Matematika dinamis dan field Honeypot pada formulir pembuatan tiket di dalam obrolan.
 
 ---
 
@@ -224,6 +262,10 @@ Sistem menyediakan API publik berformat JSON pada prefix `/api/v1/` untuk integr
 | `GET` | `/api/v1/testimonials` | Mendapatkan daftar testimoni |
 | `POST` | `/api/v1/contact` | Mengirimkan pesan/lead baru dari frontend eksternal |
 | `GET` | `/api/v1/settings` | Mendapatkan konfigurasi umum & SEO |
+| `GET` | `/api/v1/chatbot/init` | Mendapatkan konfigurasi chatbot & pertanyaan cepat |
+| `POST` | `/api/v1/chatbot/message` | Mengirim pertanyaan ke Chatbot (AI / FAQ response) |
+| `POST` | `/api/v1/chatbot/submit-ticket` | Mengirim tiket kendala teknis baru via Chatbot |
+| `POST` | `/api/v1/chatbot/track-ticket` | Melacak status & balasan tiket berdasarkan nomor tiket |
 
 ---
 

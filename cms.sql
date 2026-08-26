@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Aug 23, 2026 at 01:36 PM
+-- Generation Time: Aug 24, 2026 at 05:17 PM
 -- Server version: 12.1.2-MariaDB
 -- PHP Version: 8.3.29
 
@@ -253,17 +253,13 @@ CREATE TABLE `inbox_leads` (
   `subject` varchar(255) DEFAULT NULL,
   `message` text NOT NULL,
   `status` enum('unread','read','replied') NOT NULL DEFAULT 'unread',
+  `reply_subject` varchar(255) DEFAULT NULL,
+  `reply_message` text DEFAULT NULL,
+  `replied_at` timestamp NULL DEFAULT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `inbox_leads`
---
-
-INSERT INTO `inbox_leads` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `ip_address`, `created_at`, `updated_at`) VALUES
-(3, 'fsdgfs', 'fa@gmail.com', '082255535084', 'Perbaikan Sistem Aplikasi Web', 'fsdfs', 'unread', '127.0.0.1', '2026-08-18 20:51:45', '2026-08-18 20:51:45');
 
 -- --------------------------------------------------------
 
@@ -340,7 +336,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (21, '2026_08_11_000001_add_related_links_to_company_profiles_table', 9),
 (22, '2026_08_14_000001_add_allow_comments_to_articles_table', 10),
 (23, '2026_08_14_000002_add_two_factor_columns_to_users_table', 11),
-(24, '2026_08_14_000003_add_sort_order_to_portfolios_table', 12);
+(24, '2026_08_14_000003_add_sort_order_to_portfolios_table', 12),
+(25, '2026_08_24_093148_add_reply_fields_to_inbox_leads_table', 13);
 
 -- --------------------------------------------------------
 
@@ -461,10 +458,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('AymI5bZMWXCWScvgHCYtWGKGUF8kYzQKg0rhufTy', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJyaFZBVUtUWHJhcVVYUVdXcmlSNzR2OVpsMXA2RkFaNkNuUjZlMHJSIiwiY2FwdGNoYV9hbnN3ZXIiOjYsIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC9jbXMudGVzdCIsInJvdXRlIjoiaG9tZSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1787492158),
-('FyPhwPdruLje7Y5tx2an0wBUTEDcd3qzEcNhndyF', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJ2NWhHdVFhUnpXdnVjM2VZSE92c2xwSUIxMENKYnVaR2diOUZRREphIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2Ntcy50ZXN0Iiwicm91dGUiOiJob21lIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfX0=', 1787109797),
-('q8Jhig80MWRB41d7xQzBwtRXT570B5ZKFf7us3QV', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJZVlh4b2g0c2FydGp2WFFqMmhYRjJUWTl5Yk5FQWdySzdldTlTR3NxIiwiX2ZsYXNoIjp7Im5ldyI6W10sIm9sZCI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvY21zLnRlc3RcL2RhbGFtXC9hcnRpY2xlc1wvY3JlYXRlIiwicm91dGUiOiJhZG1pbi5hcnRpY2xlcy5jcmVhdGUifSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9', 1787392647),
-('W1B1x7OH8SUWWpSb7DoYkwmGHMgjPi1rOfKvy9p4', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJYUHZZWHVWWThxaFh4ajk0U3hjVXU5TnJCWFlvbEQxalB0WGFQNklWIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2Ntcy50ZXN0Iiwicm91dGUiOiJob21lIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwidXJsIjpbXSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjEsImNhcHRjaGFfYW5zd2VyIjo4fQ==', 1787111505);
+('Ndjl26KbTAhpxflgyo5v8xaIkz6VDc5ete5E7dnM', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiI5WDFBbDg4TGVpR3ppcDAzQkE1UTlVRmlFejNuN3RLU3dyNkFNbGZXIiwiX2ZsYXNoIjp7Im5ldyI6W10sIm9sZCI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvY21zLnRlc3RcL2RhbGFtXC9jYXRlZ29yaWVzIiwicm91dGUiOiJhZG1pbi5jYXRlZ29yaWVzLmluZGV4In0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==', 1787591527),
+('XwjsUBk7w05cBsbk95stF2lRuFTsZ4vD0FT9a2dZ', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiIxdkU4TFJGdzJ3WmNUeUxDUXhmUVFGMG10ME9QRER3N2xpd0FkOG9PIiwiY2FwdGNoYV9hbnN3ZXIiOjE0LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvY21zLnRlc3QiLCJyb3V0ZSI6ImhvbWUifSwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJ1cmwiOltdLCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=', 1787568282);
 
 -- --------------------------------------------------------
 
@@ -584,7 +579,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `role`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'Super Admin', 'jokosusanto@untan.ac.id', NULL, '$2y$12$T9TJnpt8kHrrLyEbUdFk0eu41mPZZVf.cj2BpATBKpnGGqM0qQhTW', NULL, NULL, NULL, 'superadmin', 1, NULL, '2026-08-02 08:26:40', '2026-08-17 22:35:28'),
-(3, 'editor', 'editor@example.com', NULL, '$2y$12$M4epKLprXzDCU80O/3heeu8fyFMHj/CvLiDj6OTVwbINxE1aApSXq', NULL, NULL, NULL, 'editor', 1, NULL, '2026-08-14 03:52:04', '2026-08-14 03:52:04');
+(3, 'editor', 'editor@example.com', NULL, '$2y$12$M4epKLprXzDCU80O/3heeu8fyFMHj/CvLiDj6OTVwbINxE1aApSXq', NULL, NULL, NULL, 'editor', 1, NULL, '2026-08-14 03:52:04', '2026-08-14 03:52:04'),
+(4, 'Helpdesk', 'doni@untan.ac.id', NULL, '$2y$12$DufFoPLJlmk8kaedYOd/ru9gbNyyWLYPTMYHBtDKHrz.5JXfm5Oja', NULL, NULL, NULL, 'helpdesk', 1, NULL, '2026-08-24 09:58:35', '2026-08-24 09:59:09');
 
 --
 -- Indexes for dumped tables
@@ -794,7 +790,7 @@ ALTER TABLE `hero_banners`
 -- AUTO_INCREMENT for table `inbox_leads`
 --
 ALTER TABLE `inbox_leads`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -806,7 +802,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -848,7 +844,7 @@ ALTER TABLE `testimonials`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables

@@ -22,12 +22,17 @@ class InboxController extends Controller
         $query = InboxLead::query();
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
+            $rawId = preg_replace('/[^0-9]/', '', $search);
+            $query->where(function ($q) use ($search, $rawId) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('subject', 'like', "%{$search}%")
                   ->orWhere('message', 'like', "%{$search}%");
+
+                if (!empty($rawId)) {
+                    $q->orWhere('id', (int)$rawId);
+                }
             });
         }
 

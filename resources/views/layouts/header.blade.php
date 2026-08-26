@@ -128,10 +128,20 @@
                 </button>
 
                 <!-- HELPDESK CTA BUTTON -->
-                <a href="{{ route('home') }}#helpdesk" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 uppercase tracking-wider">
-                    <i data-lucide="headphones" class="w-4 h-4 text-slate-950"></i>
-                    <span>IT Helpdesk</span>
-                </a>
+                @if(($settings['chatbot_enabled'] ?? '1') === '1')
+                    <button type="button" 
+                            onclick="window.openItChatbot()"
+                            @click="window.openItChatbot()" 
+                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 uppercase tracking-wider cursor-pointer">
+                        <i data-lucide="headphones" class="w-4 h-4 text-slate-950"></i>
+                        <span>IT Helpdesk</span>
+                    </button>
+                @else
+                    <a href="{{ route('home') }}#helpdesk" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 uppercase tracking-wider">
+                        <i data-lucide="headphones" class="w-4 h-4 text-slate-950"></i>
+                        <span>IT Helpdesk</span>
+                    </a>
+                @endif
             </div>
 
             <!-- Mobile & Tablet Controls (Visible only below LG screen width < 1024px) -->
@@ -172,6 +182,17 @@
         <a href="{{ route('articles.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Berita') }}</a>
         <a href="{{ route('home') }}#portofolio" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Portofolio') }}</a>
         <a href="{{ route('home') }}#tim-ahli" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Tim') }}</a>
-        <a href="{{ route('home') }}#helpdesk" @click="mobileMenuOpen = false" class="block px-3 py-2.5 rounded-xl text-sm font-extrabold bg-cyan-500 text-slate-950 text-center mt-2">IT Helpdesk Support</a>
+        
+        @if(($settings['chatbot_enabled'] ?? '1') === '1')
+            <button type="button" 
+                    onclick="window.openItChatbot()"
+                    @click="mobileMenuOpen = false; window.openItChatbot()" 
+                    class="w-full px-3 py-2.5 rounded-xl text-sm font-extrabold bg-cyan-500 text-slate-950 text-center mt-2 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer">
+                <i data-lucide="headphones" class="w-4 h-4"></i>
+                <span>Buka Chatbot IT Helpdesk</span>
+            </button>
+        @else
+            <a href="{{ route('home') }}#helpdesk" @click="mobileMenuOpen = false" class="block px-3 py-2.5 rounded-xl text-sm font-extrabold bg-cyan-500 text-slate-950 text-center mt-2">IT Helpdesk Support</a>
+        @endif
     </div>
 </header>

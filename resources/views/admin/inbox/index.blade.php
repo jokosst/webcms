@@ -74,6 +74,7 @@
                 <thead class="text-xs text-slate-400 uppercase bg-slate-800/60 border-b border-slate-800">
                     <tr>
                         <th class="px-4 py-3.5 w-12 text-center">No</th>
+                        <th class="px-4 py-3.5 whitespace-nowrap">No. Tiket</th>
                         <th class="px-4 py-3.5">Pengirim & Kontak</th>
                         <th class="px-4 py-3.5">Kategori / Subjek</th>
                         <th class="px-4 py-3.5">Status</th>
@@ -86,6 +87,13 @@
                         <tr class="hover:bg-slate-800/40 transition-colors {{ $l->status === 'unread' ? 'bg-indigo-950/25' : '' }}">
                             <td class="px-4 py-4 text-center font-bold text-slate-500 text-xs">
                                 {{ $leads->firstItem() + $index }}
+                            </td>
+                            <!-- No. Tiket Column -->
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <a href="{{ route('admin.inbox.show', $l->id) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-mono text-xs font-bold transition-colors group/tkt" title="Klik untuk lihat detail tiket">
+                                    <i data-lucide="ticket" class="w-3.5 h-3.5 text-indigo-400 group-hover/tkt:scale-110 transition-transform"></i>
+                                    <span>TKT-{{ str_pad($l->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                </a>
                             </td>
                             <td class="px-4 py-4">
                                 <p class="text-white font-bold flex items-center gap-2">
@@ -138,7 +146,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-slate-500 space-y-2">
+                            <td colspan="7" class="px-4 py-12 text-center text-slate-500 space-y-2">
                                 <i data-lucide="inbox" class="w-10 h-10 mx-auto text-slate-600 opacity-50"></i>
                                 <p class="text-sm font-semibold text-slate-400">Tidak ada pesan masuk yang ditemukan.</p>
                                 @if($search || $status)

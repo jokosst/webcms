@@ -65,6 +65,7 @@
                 <select name="role" required class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-red-500">
                     <option value="superadmin" {{ old('role', $user->role) === 'superadmin' ? 'selected' : '' }}>Superadmin (Akses Penuh Seluruh Sistem)</option>
                     <option value="editor" {{ old('role', $user->role) === 'editor' ? 'selected' : '' }}>Editor (Kelola Berita & Artikel)</option>
+                    <option value="helpdesk" {{ old('role', $user->role) === 'helpdesk' ? 'selected' : '' }}>Helpdesk (Kelola Interaksi: Inbox & FAQ)</option>
                 </select>
                 @error('role')
                     <p class="text-xs text-red-400 mt-1.5">{{ $message }}</p>

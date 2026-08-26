@@ -35,6 +35,12 @@
         <!-- Header Message Info -->
         <div class="flex items-start justify-between border-b border-slate-800 pb-4">
             <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-mono text-xs font-bold">
+                        <i data-lucide="ticket" class="w-3 h-3 text-indigo-400"></i>
+                        <span>#TKT-{{ str_pad($lead->id, 5, '0', STR_PAD_LEFT) }}</span>
+                    </span>
+                </div>
                 <h3 class="text-lg font-bold text-white">{{ $lead->subject ?? 'Tanpa Subjek' }}</h3>
                 <p class="text-xs text-slate-400 mt-1">Diterima pada {{ $lead->created_at->format('d F Y, H:i') }} ({{ $lead->created_at->diffForHumans() }})</p>
             </div>

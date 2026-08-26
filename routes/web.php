@@ -47,8 +47,8 @@ Route::prefix('dalam')->name('admin.')->group(function () {
 
     // Authenticated Admin Dashboard Routes
     Route::middleware('auth')->group(function () {
-        // Routes accessible to both Superadmin and Editor
-        Route::middleware('role:superadmin,editor')->group(function () {
+        // Routes accessible to all authenticated roles (Superadmin, Editor, Helpdesk)
+        Route::middleware('role:superadmin,editor,helpdesk')->group(function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
             // Profile Edit (Every logged-in user can edit their own profile)
@@ -60,7 +60,10 @@ Route::prefix('dalam')->name('admin.')->group(function () {
             Route::post('/profile/two-factor/confirm', [\App\Http\Controllers\Admin\ProfileController::class, 'confirmTwoFactor'])->name('profile.two-factor.confirm');
             Route::delete('/profile/two-factor/disable', [\App\Http\Controllers\Admin\ProfileController::class, 'disableTwoFactor'])->name('profile.two-factor.disable');
             Route::post('/profile/two-factor/recovery-codes', [\App\Http\Controllers\Admin\ProfileController::class, 'regenerateRecoveryCodes'])->name('profile.two-factor.recovery-codes');
+        });
 
+        // Routes accessible to Superadmin & Editor (Berita, Artikel & Komentar)
+        Route::middleware('role:superadmin,editor')->group(function () {
             // Articles & Comments
             Route::resource('/articles', ArticleController::class);
             Route::post('/articles/{article}/comments/{comment}/reply', [ArticleController::class, 'replyComment'])->name('articles.comments.reply');
@@ -70,6 +73,34 @@ Route::prefix('dalam')->name('admin.')->group(function () {
             Route::get('/comments', [\App\Http\Controllers\Admin\CommentController::class, 'index'])->name('comments.index');
             Route::post('/comments/{comment}/reply', [\App\Http\Controllers\Admin\CommentController::class, 'reply'])->name('comments.reply');
             Route::delete('/comments/{comment}', [\App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comments.destroy');
+        });
+
+        // Routes accessible to Superadmin & Helpdesk (Interaksi: Inbox Pesan & FAQ)
+        Route::middleware('role:superadmin,helpdesk')->group(function () {
+            // FAQs
+            Route::get('/faqs/export/json', [FaqController::class, 'exportJson'])->name('faqs.export.json');
+            Route::get('/faqs/export/csv', [FaqController::class, 'exportCsv'])->name('faqs.export.csv');
+            Route::get('/faqs/template/{format}', [FaqController::class, 'downloadTemplate'])->name('faqs.template');
+            Route::post('/faqs/import', [FaqController::class, 'import'])->name('faqs.import');
+            Route::patch('/faqs/{faq}/toggle-active', [FaqController::class, 'toggleActive'])->name('faqs.toggle-active');
+            Route::resource('/faqs', FaqController::class)->except(['show', 'create', 'edit']);
+
+            // Chatbot Logs & Analytics
+            Route::get('/chatbot-logs', [\App\Http\Controllers\Admin\ChatbotLogController::class, 'index'])->name('chatbot-logs.index');
+            Route::get('/chatbot-logs/export/csv', [\App\Http\Controllers\Admin\ChatbotLogController::class, 'exportCsv'])->name('chatbot-logs.export.csv');
+            Route::get('/chatbot-logs/{chatbotLog}', [\App\Http\Controllers\Admin\ChatbotLogController::class, 'show'])->name('chatbot-logs.show');
+            Route::delete('/chatbot-logs/{chatbotLog}', [\App\Http\Controllers\Admin\ChatbotLogController::class, 'destroy'])->name('chatbot-logs.destroy');
+            Route::post('/chatbot-logs/clear', [\App\Http\Controllers\Admin\ChatbotLogController::class, 'clear'])->name('chatbot-logs.clear');
+
+            // Inbox Leads
+            Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
+            Route::get('/inbox/export/excel', [InboxController::class, 'exportExcel'])->name('inbox.export.excel');
+            Route::get('/inbox/export/pdf', [InboxController::class, 'exportPdf'])->name('inbox.export.pdf');
+            Route::get('/inbox/{inboxLead}', [InboxController::class, 'show'])->name('inbox.show');
+            Route::post('/inbox/{inboxLead}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
+            Route::post('/inbox/{inboxLead}/reply-gmail-web', [InboxController::class, 'replyGmailWeb'])->name('inbox.reply-gmail-web');
+            Route::patch('/inbox/{inboxLead}/status', [InboxController::class, 'updateStatus'])->name('inbox.status');
+            Route::delete('/inbox/{inboxLead}', [InboxController::class, 'destroy'])->name('inbox.destroy');
         });
 
         // Routes restricted ONLY to Superadmin
@@ -98,25 +129,13 @@ Route::prefix('dalam')->name('admin.')->group(function () {
             // Testimonials
             Route::resource('/testimonials', TestimonialController::class)->except(['show']);
 
-            // FAQs
-            Route::resource('/faqs', FaqController::class)->except(['show', 'create', 'edit']);
-
-            // Inbox Leads
-            Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
-            Route::get('/inbox/export/excel', [InboxController::class, 'exportExcel'])->name('inbox.export.excel');
-            Route::get('/inbox/export/pdf', [InboxController::class, 'exportPdf'])->name('inbox.export.pdf');
-            Route::get('/inbox/{inboxLead}', [InboxController::class, 'show'])->name('inbox.show');
-            Route::post('/inbox/{inboxLead}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
-            Route::post('/inbox/{inboxLead}/reply-gmail-web', [InboxController::class, 'replyGmailWeb'])->name('inbox.reply-gmail-web');
-            Route::patch('/inbox/{inboxLead}/status', [InboxController::class, 'updateStatus'])->name('inbox.status');
-            Route::delete('/inbox/{inboxLead}', [InboxController::class, 'destroy'])->name('inbox.destroy');
-
             // User Management
             Route::resource('/users', UserController::class)->except(['show']);
 
             // Settings
             Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
             Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::post('/settings/test-gemini', [SettingController::class, 'testGemini'])->name('settings.test-gemini');
         });
     });
 });

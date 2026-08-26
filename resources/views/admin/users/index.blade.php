@@ -85,13 +85,17 @@
                                     <span class="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-extrabold uppercase">
                                         Superadmin
                                     </span>
-                                @elseif($u->role === 'operator')
-                                    <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-extrabold uppercase">
-                                        Operator Desa
+                                @elseif($u->role === 'helpdesk')
+                                    <span class="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] font-extrabold uppercase">
+                                        Helpdesk
+                                    </span>
+                                @elseif($u->role === 'editor')
+                                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-extrabold uppercase">
+                                        Editor
                                     </span>
                                 @else
-                                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-extrabold uppercase">
-                                        {{ ucfirst($u->role ?? 'Editor') }}
+                                    <span class="px-3 py-1 rounded-full bg-slate-500/10 border border-slate-500/30 text-slate-400 text-[10px] font-extrabold uppercase">
+                                        {{ ucfirst($u->role ?? 'User') }}
                                     </span>
                                 @endif
                             </td>

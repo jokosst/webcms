@@ -145,6 +145,11 @@
     <!-- FOOTER LAYOUT -->
     @include('layouts.footer')
 
+    <!-- SMART IT HELPDESK CHATBOT WIDGET -->
+    @if(($settings['chatbot_enabled'] ?? '1') === '1')
+        @include('layouts.chatbot')
+    @endif
+
     @stack('scripts')
 
     <!-- Google Translate Auto Translation Script -->

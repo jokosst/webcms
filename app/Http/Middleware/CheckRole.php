@@ -39,6 +39,12 @@ class CheckRole
                 ->with('error', 'Akses Ditolak. Account Role Editor hanya memiliki akses untuk mengelola Berita & Artikel.');
         }
 
+        // Redirect helpdesk to inbox page with warning if attempting to access forbidden routes
+        if ($userRole === 'helpdesk') {
+            return redirect()->route('admin.inbox.index')
+                ->with('error', 'Akses Ditolak. Account Role Helpdesk hanya memiliki akses untuk mengelola Interaksi (Inbox & FAQ).');
+        }
+
         abort(403, 'Akses Ditolak. Anda tidak memiliki izin untuk mengedit bagian ini.');
     }
 }

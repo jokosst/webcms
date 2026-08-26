@@ -50,17 +50,19 @@
                         <span>Dashboard</span>
                     </a>
 
-                    <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Artikel & Komentar</p>
+                    @if(Auth::check() && in_array(Auth::user()->role, ['superadmin', 'editor']))
+                        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Artikel & Komentar</p>
 
-                    <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.articles.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                        <i data-lucide="newspaper" class="w-4 h-4 text-cyan-400"></i>
-                        <span>Berita / Artikel</span>
-                    </a>
+                        <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.articles.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
+                            <i data-lucide="newspaper" class="w-4 h-4 text-cyan-400"></i>
+                            <span>Berita / Artikel</span>
+                        </a>
 
-                    <a href="{{ route('admin.comments.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.comments.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                        <i data-lucide="message-square" class="w-4 h-4 text-cyan-400"></i>
-                        <span>Komentar Artikel</span>
-                    </a>
+                        <a href="{{ route('admin.comments.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.comments.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
+                            <i data-lucide="message-square" class="w-4 h-4 text-cyan-400"></i>
+                            <span>Komentar Artikel</span>
+                        </a>
+                    @endif
 
                     @if(Auth::check() && Auth::user()->role === 'superadmin')
                         <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Konten Perusahaan</p>
@@ -89,9 +91,6 @@
                             <i data-lucide="folder-kanban" class="w-4 h-4"></i>
                             <span>Portofolio & Proyek</span>
                         </a>
-
-                        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Interaksi & Tim</p>
-
                         <a href="{{ route('admin.team-members.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.team-members.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
                             <i data-lucide="users" class="w-4 h-4"></i>
                             <span>Tim & Manajemen</span>
@@ -101,11 +100,10 @@
                             <i data-lucide="message-square" class="w-4 h-4"></i>
                             <span>Testimoni</span>
                         </a>
+                    @endif
 
-                        <a href="{{ route('admin.faqs.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.faqs.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                            <i data-lucide="help-circle" class="w-4 h-4"></i>
-                            <span>FAQ / Tanya Jawab</span>
-                        </a>
+                    @if(Auth::check() && in_array(Auth::user()->role, ['superadmin', 'helpdesk']))
+                        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Interaksi</p>
 
                         <a href="{{ route('admin.inbox.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.inbox.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
                             <div class="flex items-center gap-3">
@@ -117,7 +115,23 @@
                                 <span class="px-2 py-0.5 text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-full">{{ $unreadCount }}</span>
                             @endif
                         </a>
+                        <a href="{{ route('admin.faqs.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.faqs.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
+                            <i data-lucide="help-circle" class="w-4 h-4"></i>
+                            <span>FAQ / Tanya Jawab</span>
+                        </a>
+                        <a href="{{ route('admin.chatbot-logs.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.chatbot-logs.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="headphones" class="w-4 h-4 text-cyan-400"></i>
+                                <span>Riwayat Chatbot</span>
+                            </div>
+                            @php $unansweredLogCount = \App\Models\ChatbotLog::where('is_answered', false)->count(); @endphp
+                            @if($unansweredLogCount > 0)
+                                <span class="px-2 py-0.5 text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full" title="{{ $unansweredLogCount }} pertanyaan belum terjawab">{{ $unansweredLogCount }}</span>
+                            @endif
+                        </a>
+                    @endif
 
+                    @if(Auth::check() && Auth::user()->role === 'superadmin')
                         <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Sistem</p>
 
                         <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.users.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
