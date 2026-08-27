@@ -97,8 +97,8 @@ class ChatbotLogController extends Controller
             ] : null,
             'ip_address' => $chatbotLog->ip_address ?? '-',
             'user_agent' => $chatbotLog->user_agent ?? '-',
-            'created_at' => $chatbotLog->created_at ? $chatbotLog->created_at->translatedFormat('d F Y, H:i:s') . ' WIB' : '-',
-            'time_ago' => $chatbotLog->created_at ? $chatbotLog->created_at->diffForHumans() : '-',
+            'created_at' => $chatbotLog->created_at ? $chatbotLog->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i:s') . ' WIB' : '-',
+            'time_ago' => $chatbotLog->created_at ? $chatbotLog->created_at->timezone('Asia/Jakarta')->diffForHumans() : '-',
         ]);
     }
 
@@ -178,7 +178,7 @@ class ChatbotLogController extends Controller
                 foreach ($logs as $log) {
                     fputcsv($handle, [
                         $log->id,
-                        $log->created_at ? $log->created_at->format('Y-m-d H:i:s') : '',
+                        $log->created_at ? $log->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i:s') . ' WIB' : '',
                         $log->user_query,
                         $log->bot_reply,
                         $log->response_type_label,

@@ -243,16 +243,16 @@
                                 @endif
                             </td>
 
-                            <!-- Timestamp & Client Info -->
+                            <!-- Timestamp & Client Info (WIB / Asia/Jakarta) -->
                             <td class="py-4 px-4 whitespace-nowrap">
                                 <div class="text-slate-200 font-medium">
-                                    {{ $log->created_at ? $log->created_at->translatedFormat('d M Y, H:i') : '-' }}
+                                    {{ $log->created_at ? $log->created_at->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}
                                 </div>
                                 <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
                                     <i data-lucide="globe" class="w-3 h-3 text-slate-600"></i>
                                     <span>{{ $log->ip_address ?? '127.0.0.1' }}</span>
                                     <span>•</span>
-                                    <span>{{ $log->created_at ? $log->created_at->diffForHumans() : '' }}</span>
+                                    <span>{{ $log->created_at ? $log->created_at->timezone('Asia/Jakarta')->diffForHumans() : '' }}</span>
                                 </div>
                             </td>
 

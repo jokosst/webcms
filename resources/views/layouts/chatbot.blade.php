@@ -80,9 +80,8 @@
                                             <button @click="giveFeedback(msg, true)" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
                                                 <span>👍 Membantu</span>
                                             </button>
-                                            <button @click="openTicketForm(msg.topic || '')" type="button" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white border border-cyan-400/30 text-xs font-bold shadow-md shadow-cyan-500/20 transition-all flex items-center gap-1.5 transform active:scale-95 cursor-pointer">
-                                                <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
-                                                <span>Buat Tiket ke Helpdesk</span>
+                                            <button @click="openTicketForm(msg.topic || '')" type="button" class="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
+                                                <span>👎 Tidak Membantu, Buat Tiket</span>
                                             </button>
                                         </div>
                                     </template>
