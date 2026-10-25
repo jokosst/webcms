@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\HeroBannerController;
 use App\Http\Controllers\Admin\InboxController;
+use App\Http\Controllers\Admin\LabBookingController;
+use App\Http\Controllers\Admin\LaboratoryController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\Admin\TeamMemberController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LabScheduleController;
 use Illuminate\Support\Facades\Route;
 
 // Language Switcher Route
@@ -29,6 +32,16 @@ Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact
 Route::get('/berita', [HomeController::class, 'allArticles'])->name('articles.index');
 Route::get('/berita/{slug}', [HomeController::class, 'showArticle'])->name('articles.show');
 Route::post('/articles/{article}/comment', [HomeController::class, 'submitArticleComment'])->name('articles.comment.submit');
+
+//pemdi
+Route::get('/pemdi', function () {
+    return view('pemdi');
+});
+
+// Public Lab Schedule & Booking Routes
+Route::get('/jadwal-lab', [LabScheduleController::class, 'index'])->name('lab-schedule.index');
+Route::post('/jadwal-lab/ajukan', [LabScheduleController::class, 'store'])->name('lab-schedule.store');
+Route::post('/jadwal-lab/cek-status', [LabScheduleController::class, 'checkStatus'])->name('lab-schedule.check-status');
 
 // Named login route for Laravel's Auth Middleware default
 Route::get('/masukaksesdalam', [AuthController::class, 'showLoginForm'])->name('login');
@@ -101,6 +114,18 @@ Route::prefix('dalam')->name('admin.')->group(function () {
             Route::post('/inbox/{inboxLead}/reply-gmail-web', [InboxController::class, 'replyGmailWeb'])->name('inbox.reply-gmail-web');
             Route::patch('/inbox/{inboxLead}/status', [InboxController::class, 'updateStatus'])->name('inbox.status');
             Route::delete('/inbox/{inboxLead}', [InboxController::class, 'destroy'])->name('inbox.destroy');
+
+            // Fasilitas & Laboratorium
+            Route::resource('/laboratories', LaboratoryController::class);
+            Route::get('/lab-bookings', [LabBookingController::class, 'index'])->name('lab-bookings.index');
+            Route::get('/lab-bookings/create', [LabBookingController::class, 'create'])->name('lab-bookings.create');
+            Route::post('/lab-bookings', [LabBookingController::class, 'store'])->name('lab-bookings.store');
+            Route::post('/lab-bookings/toggle-service', [LabBookingController::class, 'toggleService'])->name('lab-bookings.toggle-service');
+            Route::get('/lab-bookings/{booking}', [LabBookingController::class, 'show'])->name('lab-bookings.show');
+            Route::post('/lab-bookings/{booking}/approve', [LabBookingController::class, 'approve'])->name('lab-bookings.approve');
+            Route::post('/lab-bookings/{booking}/reject', [LabBookingController::class, 'reject'])->name('lab-bookings.reject');
+            Route::post('/lab-bookings/{booking}/complete', [LabBookingController::class, 'complete'])->name('lab-bookings.complete');
+            Route::delete('/lab-bookings/{booking}', [LabBookingController::class, 'destroy'])->name('lab-bookings.destroy');
         });
 
         // Routes restricted ONLY to Superadmin

@@ -8,6 +8,7 @@ use App\Models\CompanyProfile;
 use App\Models\Faq;
 use App\Models\HeroBanner;
 use App\Models\InboxLead;
+use App\Models\Laboratory;
 use App\Models\Portfolio;
 use App\Models\Service;
 use App\Models\SiteSetting;
@@ -125,6 +126,7 @@ class HomeController extends Controller
         $testimonials = Testimonial::where('is_active', true)->orderBy('sort_order', 'asc')->get();
         $faqs = Faq::where('is_active', true)->orderBy('sort_order', 'asc')->get();
         $settings = SiteSetting::all()->pluck('value', 'key');
+        $laboratories = Laboratory::where('is_active', true)->orderBy('name')->get();
 
         return view('company', compact(
             'profile',
@@ -136,7 +138,8 @@ class HomeController extends Controller
             'testimonials',
             'faqs',
             'settings',
-            'captchaQuestion'
+            'captchaQuestion',
+            'laboratories'
         ));
     }
 

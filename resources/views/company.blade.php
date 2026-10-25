@@ -366,9 +366,85 @@
         </div>
     </section>
 
-   
+    <!-- SECTION CTA KHUSUS: FASILITAS JADWAL & PEMINJAMAN LAB KOMPUTER -->
+    <section class="py-12 relative border-b transition-colors duration-300 overflow-hidden"
+             :class="darkMode ? 'bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-slate-800' : 'bg-gradient-to-r from-cyan-50/70 via-indigo-50/50 to-white border-slate-200'">
+        
+        <!-- Ambient Glow Elements -->
+        <div class="absolute -top-16 -left-16 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-16 -right-16 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- SECTION 5: BERITA & ARTIKEL TERKINI (`$articles`) -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="p-8 sm:p-10 rounded-3xl border shadow-2xl backdrop-blur-xl relative overflow-hidden transition-all duration-300"
+                 :class="darkMode ? 'bg-slate-900/80 border-cyan-500/30' : 'bg-white/95 border-cyan-200 shadow-cyan-500/5'">
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Left Column: Title & Description -->
+                    <div class="lg:col-span-8 space-y-4">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border shadow-sm"
+                             :class="darkMode ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <span>{{ __('Fasilitas Kampus & Pusat Ujian CAT') }}</span>
+                        </div>
+
+                        <h2 class="text-2xl sm:text-3xl font-black font-heading tracking-tight"
+                            :class="darkMode ? 'text-white' : 'text-slate-900'">
+                            {{ __('Butuh Ruang Laboratorium Komputer untuk Ujian / Pelatihan?') }}
+                        </h2>
+
+                        @php
+                            $dynamicLabs = $laboratories ?? \App\Models\Laboratory::where('is_active', true)->orderBy('name')->get();
+                            $labCount = $dynamicLabs->count();
+                            $totalLabCapacity = $dynamicLabs->sum('capacity');
+                            $labNamesFormatted = $dynamicLabs->pluck('name')->join(', ');
+                        @endphp
+
+                        <p class="text-xs sm:text-sm leading-relaxed max-w-2xl font-normal"
+                           :class="darkMode ? 'text-slate-300' : 'text-slate-600'">
+                            {{ __('UPA TIK menyediakan') }} {{ $labCount }} {{ __('ruang laboratorium komputer berstandar nasional (') }}{{ $labNamesFormatted }}{{ __(') dengan total daya tampung') }} {{ $totalLabCapacity }} {{ __('unit PC workstation, AC 2 PK, sistem audio terintegrasi, dan koneksi internet gigabit. Cek ketersediaan slot kosong kalender secara real-time dan ajukan permohonan reservasi online.') }}
+                        </p>
+
+                        <!-- Highlights Pills -->
+                        <div class="flex flex-wrap items-center gap-2.5 pt-1 text-[11px] font-bold">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl"
+                                  :class="darkMode ? 'bg-slate-950/80 text-cyan-300 border border-slate-800' : 'bg-cyan-50 text-cyan-800 border border-cyan-200'">
+                                <i data-lucide="monitor" class="w-3.5 h-3.5 text-cyan-500"></i>
+                                <span>{{ $labCount }} Ruang Lab ({{ $labNamesFormatted }})</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl"
+                                  :class="darkMode ? 'bg-slate-950/80 text-indigo-300 border border-slate-800' : 'bg-indigo-50 text-indigo-800 border border-indigo-200'">
+                                <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i>
+                                <span>Kapasitas {{ $totalLabCapacity }} Workstation PC</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl"
+                                  :class="darkMode ? 'bg-slate-950/80 text-emerald-300 border border-slate-800' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                <span>Bebas Biaya Civitas Untan</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Direct CTA Buttons -->
+                    <div class="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center">
+                        <a href="{{ route('lab-schedule.index') }}" 
+                           class="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-cyan-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2.5 uppercase tracking-wider text-center">
+                            <i data-lucide="calendar" class="w-4 h-4 text-slate-950"></i>
+                            <span>{{ __('Cek Jadwal & Reservasi Lab') }}</span>
+                        </a>
+
+                        <a href="{{ route('lab-schedule.index') }}#sop-alur" 
+                           class="w-full px-6 py-3.5 rounded-2xl border font-extrabold text-xs transition-all hover:scale-105 flex items-center justify-center gap-2 text-center"
+                           :class="darkMode ? 'bg-slate-950/70 border-slate-800 text-slate-300 hover:bg-slate-900 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'">
+                            <i data-lucide="file-text" class="w-4 h-4 text-cyan-500"></i>
+                            <span>{{ __('Unduh SOP & Alur Pinjam') }}</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
     <section id="berita" class="py-20 relative border-b transition-colors duration-300"
              :class="darkMode ? 'bg-slate-900/60 border-slate-800/80' : 'bg-slate-50 border-slate-200'">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

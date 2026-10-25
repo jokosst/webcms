@@ -54,12 +54,12 @@
                         <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Artikel & Komentar</p>
 
                         <a href="{{ route('admin.articles.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.articles.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                            <i data-lucide="newspaper" class="w-4 h-4 text-cyan-400"></i>
+                            <i data-lucide="newspaper" class="w-4 h-4"></i>
                             <span>Berita / Artikel</span>
                         </a>
 
                         <a href="{{ route('admin.comments.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.comments.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                            <i data-lucide="message-square" class="w-4 h-4 text-cyan-400"></i>
+                            <i data-lucide="message-square" class="w-4 h-4"></i>
                             <span>Komentar Artikel</span>
                         </a>
                     @endif
@@ -121,7 +121,7 @@
                         </a>
                         <a href="{{ route('admin.chatbot-logs.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.chatbot-logs.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
                             <div class="flex items-center gap-3">
-                                <i data-lucide="headphones" class="w-4 h-4 text-cyan-400"></i>
+                                <i data-lucide="headphones" class="w-4 h-4"></i>
                                 <span>Riwayat Chatbot</span>
                             </div>
                             @php $unansweredLogCount = \App\Models\ChatbotLog::where('is_answered', false)->count(); @endphp
@@ -129,13 +129,31 @@
                                 <span class="px-2 py-0.5 text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full" title="{{ $unansweredLogCount }} pertanyaan belum terjawab">{{ $unansweredLogCount }}</span>
                             @endif
                         </a>
+
+                        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Fasilitas & Lab</p>
+
+                        <a href="{{ route('admin.lab-bookings.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.lab-bookings.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                <span>Peminjaman Lab</span>
+                            </div>
+                            @php $pendingLabCount = \App\Models\LabBooking::where('status', 'pending')->count(); @endphp
+                            @if($pendingLabCount > 0)
+                                <span class="px-2 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full" title="{{ $pendingLabCount }} permohonan baru">{{ $pendingLabCount }}</span>
+                            @endif
+                        </a>
+
+                        <a href="{{ route('admin.laboratories.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.laboratories.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
+                            <i data-lucide="monitor" class="w-4 h-4"></i>
+                            <span>Data Laboratorium</span>
+                        </a>
                     @endif
 
                     @if(Auth::check() && Auth::user()->role === 'superadmin')
                         <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Sistem</p>
 
                         <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors {{ request()->routeIs('admin.users.*') ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                            <i data-lucide="shield-check" class="w-4 h-4 text-red-400"></i>
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
                             <span>Manajemen Pengguna</span>
                         </a>
 
@@ -199,29 +217,38 @@
             <div class="p-6 flex-1 space-y-6">
                 <!-- Flash Alerts -->
                 @if(session('success'))
-                    <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-between">
+                    <div x-data="{ show: true }" x-show="show" x-transition.opacity class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
                             <span class="text-sm font-medium">{{ session('success') }}</span>
                         </div>
+                        <button type="button" @click="show = false" class="text-emerald-400/60 hover:text-emerald-300 p-1 rounded-lg hover:bg-emerald-500/20 transition-colors" title="Tutup">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-between">
+                    <div x-data="{ show: true }" x-show="show" x-transition.opacity class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-400 shrink-0"></i>
                             <span class="text-sm font-medium">{{ session('error') }}</span>
                         </div>
+                        <button type="button" @click="show = false" class="text-rose-400/60 hover:text-rose-300 p-1 rounded-lg hover:bg-rose-500/20 transition-colors" title="Tutup">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 @endif
 
                 @if(session('info'))
-                    <div class="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-between">
+                    <div x-data="{ show: true }" x-show="show" x-transition.opacity class="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <i data-lucide="info" class="w-5 h-5 text-sky-400 shrink-0"></i>
                             <span class="text-sm font-medium">{{ session('info') }}</span>
                         </div>
+                        <button type="button" @click="show = false" class="text-sky-400/60 hover:text-sky-300 p-1 rounded-lg hover:bg-sky-500/20 transition-colors" title="Tutup">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 @endif
 

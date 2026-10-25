@@ -18,21 +18,6 @@
         </a>
     </div>
 
-    <!-- Alert Notifications -->
-    @if(session('success'))
-        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold flex items-center gap-3">
-            <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     <!-- Search & Filter Card -->
     <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-4">
         <form action="{{ route('admin.users.index') }}" method="GET" class="flex items-center gap-2 w-full max-w-md">

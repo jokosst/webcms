@@ -218,9 +218,10 @@
                             <select name="chatbot_ai_model" 
                                     id="gemini_model_select"
                                     class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:border-indigo-500 focus:outline-none">
+                                <option value="gemini-3.5-flash-lite" {{ old('chatbot_ai_model', $settings['chatbot_ai_model'] ?? '') == 'gemini-3.5-flash-lite' ? 'selected' : '' }}>gemini-3.5-flash-lite (Sangat Cepat & Stabil)</option>
                                 <option value="gemini-3.6-flash" {{ old('chatbot_ai_model', $settings['chatbot_ai_model'] ?? 'gemini-3.6-flash') == 'gemini-3.6-flash' ? 'selected' : '' }}>gemini-3.6-flash (Direkomendasikan)</option>
                                 <option value="gemini-3.7-flash" {{ old('chatbot_ai_model', $settings['chatbot_ai_model'] ?? '') == 'gemini-3.7-flash' ? 'selected' : '' }}>gemini-3.7-flash</option>
-                                <option value="gemini-2.5-flash" {{ old('chatbot_ai_model', $settings['chatbot_ai_model'] ?? '') == 'gemini-2.5-flash' ? 'selected' : '' }}>gemini-2.5-flash</option>
+                                <option value="gemini-3.8-flash" {{ old('chatbot_ai_model', $settings['chatbot_ai_model'] ?? '') == 'gemini-3.8-flash' ? 'selected' : '' }}>gemini-3.8-flash</option>
                                 <option value="gemini-flash-latest" {{ old('chatbot_ai_model', $settings['chatbot_ai_model'] ?? '') == 'gemini-flash-latest' ? 'selected' : '' }}>gemini-flash-latest</option>
                             </select>
                         </div>
@@ -229,7 +230,7 @@
                     <!-- System Prompt Instruction -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Instruksi Karakter / System Prompt AI</label>
-                        <textarea name="chatbot_ai_system_prompt" rows="2" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs leading-relaxed focus:border-indigo-500 focus:outline-none" placeholder="Instruksi kepribadian dan batasan AI...">{{ old('chatbot_ai_system_prompt', $settings['chatbot_ai_system_prompt'] ?? 'Kamu adalah Asisten Cerdas IT Helpdesk UPA. TIK Universitas Tanjungpura (Pontianak). Jawablah pertanyaan pengunjung secara ramah, sopan, jelas, dan membantu dalam Bahasa Indonesia. Gunakan data FAQ dan informasi layanan resmi TIK kampus sebagai rujukan utama. Jika informasi tidak tersedia sama sekali di data, sampaikan dengan sopan dan sarankan untuk membuat tiket pengaduan helpdesk. Format jawaban dengan rapi menggunakan Markdown.') }}</textarea>
+                        <textarea name="chatbot_ai_system_prompt" rows="2" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs leading-relaxed focus:border-indigo-500 focus:outline-none" placeholder="Instruksi kepribadian dan batasan AI...">{{ old('chatbot_ai_system_prompt', $settings['chatbot_ai_system_prompt'] ?? 'Kamu adalah Asisten Cerdas IT Helpdesk UPA. TIK Universitas Tanjungpura (Pontianak). Jawablah pertanyaan pengunjung secara ramah, sopan, jelas, dan membantu dalam Bahasa Indonesia. Utamakan rujukan dari FAQ resmi kampus. Namun jika pertanyaan tidak ada di FAQ, kamu diperbolehkan menjawab menggunakan pengetahuan umum IT dan keahlianmu secara solutif.') }}</textarea>
                     </div>
 
                     <!-- Test Button & Status Message -->
@@ -254,6 +255,47 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Pesan Fallback (Jika Jawaban Belum Ditemukan)</label>
                 <textarea name="chatbot_fallback_message" rows="2" class="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:border-cyan-500 focus:outline-none" placeholder="Mohon maaf, saya belum memiliki informasi lengkap...">{{ old('chatbot_fallback_message', $settings['chatbot_fallback_message'] ?? 'Wah, mohon maaf ya Kak, saya belum menemukan jawaban yang tepat dari data FAQ. Namun jangan khawatir, silakan klik tombol "Buat Tiket Support" di bawah agar segera ditindaklanjuti oleh petugas Helpdesk kami!') }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Layanan Fasilitas & Laboratorium Komputer -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 shadow-lg"
+         x-data="{ labActive: {{ old('lab_booking_enabled', $settings['lab_booking_enabled'] ?? '1') == '1' ? 'true' : 'false' }} }">
+        <h3 class="text-base font-bold text-white border-b border-slate-800 pb-3 flex items-center gap-2">
+            <i data-lucide="monitor" class="w-5 h-5 text-indigo-400"></i>
+            <span>Layanan Peminjaman Laboratorium Komputer</span>
+        </h3>
+
+        <div class="space-y-4">
+            <!-- Toggle Aktif/Nonaktif -->
+            <div class="p-4 rounded-xl border flex items-center justify-between transition-colors"
+                 :class="labActive ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-rose-950/25 border-rose-500/40'">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider" :class="labActive ? 'text-emerald-300' : 'text-rose-300'">
+                        <span x-text="labActive ? 'Layanan Online Aktif (Dibuka)' : 'Layanan Online Nonaktif (Ditutup Sementara)'"></span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Izinkan atau tutup sementara formulir pengajuan reservasi lab secara online oleh civitas akademika.
+                    </p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="lab_booking_enabled" value="1" x-model="labActive" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+            </div>
+
+            <!-- Pesan Penutupan Kustom -->
+            <div x-show="!labActive" x-transition class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Pesan Pengumuman Penutupan Sementara
+                </label>
+                <textarea name="lab_booking_closed_message" rows="3" 
+                          class="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:border-indigo-500 focus:outline-none"
+                          placeholder="Mohon maaf, layanan pengajuan peminjaman laboratorium komputer sedang ditutup sementara...">{{ old('lab_booking_closed_message', $settings['lab_booking_closed_message'] ?? 'Mohon maaf, layanan pengajuan peminjaman laboratorium komputer sedang ditutup sementara. Silakan hubungi pengelola UPA TIK untuk informasi lebih lanjut.') }}</textarea>
+                <p class="text-[11px] text-slate-400">
+                    Pesan ini akan otomatis ditampilkan di bagian atas kalender publik saat layanan ditutup.
+                </p>
             </div>
         </div>
     </div>

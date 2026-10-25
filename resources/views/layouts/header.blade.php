@@ -101,6 +101,9 @@
                 <a href="{{ route('home') }}#beranda" class="hover:text-cyan-500 transition-colors py-2">{{ __('Beranda') }}</a>
                 <a href="{{ route('home') }}#visi-misi-sambutan" class="hover:text-cyan-500 transition-colors py-2">{{ __('Profil') }}</a>
                 <a href="{{ route('home') }}#layanan" class="hover:text-cyan-500 transition-colors py-2">{{ __('Layanan') }}</a>
+                <a href="{{ route('lab-schedule.index') }}" class="hover:text-cyan-500 transition-colors py-2 flex items-center gap-1.5 {{ request()->routeIs('lab-schedule.*') ? 'text-cyan-400 font-extrabold' : '' }}">
+                    <span>{{ __('Jadwal Lab') }}</span>
+                </a>
                 <a href="{{ route('articles.index') }}" class="hover:text-cyan-500 transition-colors py-2">{{ __('Berita') }}</a>
                 <a href="{{ route('home') }}#portofolio" class="hover:text-cyan-500 transition-colors py-2">{{ __('Portofolio') }}</a>
                 <a href="{{ route('home') }}#tim-ahli" class="hover:text-cyan-500 transition-colors py-2">{{ __('Tim') }}</a>
@@ -179,6 +182,9 @@
         <a href="{{ route('home') }}#beranda" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Beranda') }}</a>
         <a href="{{ route('home') }}#visi-misi-sambutan" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Profil') }}</a>
         <a href="{{ route('home') }}#layanan" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Layanan') }}</a>
+        <a href="{{ route('lab-schedule.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">
+            <span>{{ __('Jadwal Peminjaman Lab') }}</span>
+        </a>
         <a href="{{ route('articles.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Berita') }}</a>
         <a href="{{ route('home') }}#portofolio" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Portofolio') }}</a>
         <a href="{{ route('home') }}#tim-ahli" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Tim') }}</a>

@@ -376,12 +376,15 @@
     <!-- 5. MODAL: DETAIL OBROLAN CHATBOT -->
     <div x-show="detailModal" 
          x-transition.opacity 
+         x-effect="document.body.style.overflow = detailModal ? 'hidden' : ''"
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" 
          style="display: none;">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl space-y-4 p-6"
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col"
+             style="max-height: 90vh;"
              @click.outside="detailModal = false">
             
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <!-- Modal Header (Fixed) -->
+            <div class="flex items-center justify-between border-b border-slate-800 p-5 flex-shrink-0">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
                         <i data-lucide="message-square" class="w-4 h-4"></i>
@@ -396,18 +399,19 @@
                 </button>
             </div>
 
-            <div class="space-y-4 text-xs" x-if="selectedLog">
+            <!-- Modal Body (Scrollable) -->
+            <div style="overflow-y: auto; flex: 1 1 auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
                 <!-- User Question Bubble -->
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">👤 Pertanyaan Pengunjung:</span>
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">👤 Pertanyaan Pengunjung:</span>
                     <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm font-medium leading-relaxed"
                          x-text="selectedLog?.user_query"></div>
                 </div>
 
                 <!-- Bot Reply Bubble -->
-                <div class="space-y-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400">🤖 Balasan Asisten Chatbot:</span>
-                    <div class="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-slate-200 text-xs leading-relaxed whitespace-pre-line font-mono max-h-60 overflow-y-auto"
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block mb-1">🤖 Balasan Asisten Chatbot:</span>
+                    <div class="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-slate-200 text-xs leading-relaxed whitespace-pre-line font-mono"
                          x-text="selectedLog?.bot_reply"></div>
                 </div>
 
@@ -428,7 +432,8 @@
                 </div>
             </div>
 
-            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+            <!-- Modal Footer (Fixed) -->
+            <div class="flex justify-between items-center p-5 border-t border-slate-800 flex-shrink-0">
                 <button type="button" 
                         @click="detailModal = false; openCreateFaq(selectedLog?.user_query)" 
                         class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">

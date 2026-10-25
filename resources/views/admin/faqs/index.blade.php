@@ -383,27 +383,48 @@
                               placeholder="Tuliskan solusi praktis dan panduan langkah demi langkah yang jelas..."></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 items-center">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Urutan Tampil</label>
+                <!-- Status & Urutan Tampil Section -->
+                <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+                    <!-- Checkbox Tampilkan di Halaman Web Profil -->
+                    <div class="flex items-start gap-2.5">
+                        <input type="checkbox" 
+                               name="is_active" 
+                               id="faq_is_active" 
+                               value="1" 
+                               x-model="is_active" 
+                               class="mt-0.5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-800 cursor-pointer">
+                        <label for="faq_is_active" class="cursor-pointer">
+                            <span class="text-xs text-slate-200 font-bold block">Tampilkan di Halaman Web Profil</span>
+                            <span class="text-[11px] text-slate-400 block mt-0.5">Jika dicentang, FAQ akan muncul di website publik dan Anda dapat mengatur nomor urutan posisinya.</span>
+                        </label>
+                    </div>
+
+                    <!-- Input Urutan Tampil (Hanya muncul jika is_active tercentang) -->
+                    <div x-show="is_active" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="pt-2 border-t border-slate-800/80">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                            <span>Urutan Tampil di Web Profil *</span>
+                            <span class="text-[10px] text-slate-500 font-normal lowercase">(nomor urutan dari atas ke bawah)</span>
+                        </label>
                         <input type="number" 
                                name="sort_order" 
                                x-model="sort_order" 
                                min="1" 
-                               class="w-full px-3.5 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-white text-xs focus:border-indigo-500 focus:outline-none">
+                               class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:border-indigo-500 focus:outline-none placeholder-slate-500"
+                               placeholder="Contoh: 1, 2, 3...">
                     </div>
 
-                    <div class="pt-5">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" 
-                                   name="is_active" 
-                                   id="faq_is_active" 
-                                   value="1" 
-                                   x-model="is_active" 
-                                   class="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-800">
-                            <span class="text-xs text-slate-300 font-medium">Tampilkan di Halaman Web Profil</span>
-                        </label>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Jika tidak dicentang, FAQ ini hanya digunakan oleh Chatbot & AI.</p>
+                    <!-- Info Khusus Chatbot jika tidak tercentang -->
+                    <div x-show="!is_active" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-500/30 flex items-center gap-2 text-indigo-300">
+                        <i data-lucide="bot" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+                        <span class="text-[11px]">Mode: <strong>Khusus Data Dukung Chatbot & AI</strong>. Urutan data akan diatur otomatis oleh sistem dan tidak tampil di web profil publik.</span>
                     </div>
                 </div>
 

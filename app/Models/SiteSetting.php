@@ -15,6 +15,11 @@ class SiteSetting extends Model
         'group',
     ];
 
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        return static::getByKey($key, $default);
+    }
+
     public static function getByKey(string $key, mixed $default = null): mixed
     {
         $setting = static::where('key', $key)->first();

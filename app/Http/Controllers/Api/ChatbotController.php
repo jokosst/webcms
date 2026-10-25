@@ -553,7 +553,14 @@ class ChatbotController extends Controller
     private function generateAiResponse(string $userQuery, string $botName, array $settings): ?string
     {
         $apiKey = $settings['chatbot_gemini_api_key'] ?? '';
-        $model = !empty($settings['chatbot_ai_model']) ? $settings['chatbot_ai_model'] : 'gemini-3.6-flash';
+        if (empty($apiKey)) {
+            return null;
+        }
+
+        $primaryModel = !empty($settings['chatbot_ai_model']) ? $settings['chatbot_ai_model'] : 'gemini-3.5-flash-lite';
+        // Auto resilience: try primary model, then failover to other supported models if 503/404 occurs
+        $candidateModels = array_values(array_unique([$primaryModel, 'gemini-3.5-flash-lite', 'gemini-3.6-flash']));
+
         $customPrompt = $settings['chatbot_ai_system_prompt'] ?? "Kamu adalah Asisten Cerdas IT Helpdesk UPA. TIK Universitas Tanjungpura (Pontianak). Jawablah pertanyaan pengunjung secara ramah, sopan, jelas, dan membantu dalam Bahasa Indonesia.";
 
         // Build grounded FAQ context
@@ -571,54 +578,57 @@ class ChatbotController extends Controller
             . "===============================================================\n\n"
             . "PETUNJUK JAWABAN:\n"
             . "1. Gunakan Bahasa Indonesia yang ramah, sopan, dan solutif (panggil pengguna dengan 'Kakak' atau 'Kak').\n"
-            . "2. Utamakan menjawab berdasarkan fakta dan solusi yang tertera di data FAQ resmi di atas.\n"
-            . "3. Jika pertanyaan mengenai hal di luar konteks TIK Untan atau informasinya tidak ada di FAQ, sampaikan dengan sopan bahwa data belum tersedia dan tawarkan untuk membuat tiket bantuan helpdesk.\n"
-            . "4. Gunakan format Markdown yang rapi (gunakan bold **kata penting**, list nomor/bullet jika ada urutan langkah).\n"
-            . "5. Jangan mengarang kontak atau link yang tidak terdaftar.";
+            . "2. Utamakan menjawab berdasarkan fakta dan solusi yang tertera di data FAQ resmi di atas jika pertanyaan berkaitan dengan layanan kampus.\n"
+            . "3. Jika pertanyaan pengguna TIDAK DITEMUKAN di data FAQ resmi (seperti seputar tips komputer, troubleshooting umum, edukasi teknologi, atau pengetahuan umum), kamu DIPERBOLEHKAN dan SANGAT DIANJURKAN menjawab menggunakan pengetahuan umum cerdasmu sendiri secara jelas, solutif, dan informatif.\n"
+            . "4. Namun jika kendala tersebut membutuhkan akses ke server kampus, reset akun privat, atau tindakan langsung staf IT instansi, sarankan dengan ramah untuk membuat tiket bantuan helpdesk.\n"
+            . "5. Gunakan format Markdown yang rapi (gunakan bold **kata penting**, list nomor/bullet jika ada urutan langkah).\n"
+            . "6. Jangan mengarang kontak atau link internal yang tidak terdaftar.";
 
-        try {
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
-            
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                ])
-                ->post($url, [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                [
-                                    'text' => $systemPrompt . "\n\nPertanyaan Pengguna: " . $userQuery
+        foreach ($candidateModels as $model) {
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+                
+                $response = Http::timeout(20)
+                    ->withHeaders([
+                        'Content-Type' => 'application/json',
+                    ])
+                    ->post($url, [
+                        'contents' => [
+                            [
+                                'parts' => [
+                                    [
+                                        'text' => $systemPrompt . "\n\nPertanyaan Pengguna: " . $userQuery
+                                    ]
                                 ]
                             ]
+                        ],
+                        'generationConfig' => [
+                            'temperature' => 0.5,
+                            'maxOutputTokens' => 2048,
                         ]
-                    ],
-                    'generationConfig' => [
-                        'temperature' => 0.4,
-                        'maxOutputTokens' => 2048,
-                    ]
-                ]);
+                    ]);
 
-            if ($response->successful()) {
-                $parts = $response->json('candidates.0.content.parts') ?? [];
-                $aiText = '';
-                foreach ($parts as $part) {
-                    if (isset($part['text']) && empty($part['thought'])) {
-                        $aiText .= $part['text'];
+                if ($response->successful()) {
+                    $parts = $response->json('candidates.0.content.parts') ?? [];
+                    $aiText = '';
+                    foreach ($parts as $part) {
+                        if (isset($part['text']) && empty($part['thought'])) {
+                            $aiText .= $part['text'];
+                        }
+                    }
+                    $aiText = trim($aiText);
+                    if (!empty($aiText)) {
+                        return $aiText;
                     }
                 }
-                $aiText = trim($aiText);
-                if (!empty($aiText)) {
-                    return $aiText;
-                }
-            }
 
-            Log::warning('Gemini AI returned non-200 status: ' . $response->status() . ' - Body: ' . $response->body());
-            return null;
-        } catch (\Throwable $e) {
-            Log::warning('Gemini AI request exception, auto-fallback to local FAQ: ' . $e->getMessage());
-            return null;
+                Log::warning("Gemini AI ({$model}) returned status {$response->status()} - Body: " . substr($response->body(), 0, 150));
+            } catch (\Throwable $e) {
+                Log::warning("Gemini AI ({$model}) request exception: " . $e->getMessage());
+            }
         }
+
+        return null;
     }
 
     /**

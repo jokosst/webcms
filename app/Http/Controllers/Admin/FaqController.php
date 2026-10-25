@@ -56,12 +56,23 @@ class FaqController extends Controller
         $validated = $request->validate([
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:1',
+            'is_active' => 'nullable',
         ]);
 
-        $validated['sort_order'] = $validated['sort_order'] ?? (Faq::max('sort_order') + 1);
-        $validated['is_active'] = $request->has('is_active');
+        $isActive = $request->has('is_active') && filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+
+        if ($isActive) {
+            // Jika aktif di web profil, gunakan urutan yang diinput atau taruh di urutan web berikutnya
+            $validated['sort_order'] = !empty($validated['sort_order']) 
+                ? (int)$validated['sort_order'] 
+                : ((Faq::where('is_active', true)->max('sort_order') ?? 0) + 1);
+        } else {
+            // Jika tidak aktif (khusus chatbot), urutan diatur otomatis mengikuti urutan data yang ada
+            $validated['sort_order'] = (int)(Faq::max('sort_order') ?? 0) + 1;
+        }
+
+        $validated['is_active'] = $isActive;
 
         Faq::create($validated);
 
@@ -76,12 +87,21 @@ class FaqController extends Controller
         $validated = $request->validate([
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:1',
+            'is_active' => 'nullable',
         ]);
 
-        $validated['sort_order'] = $validated['sort_order'] ?? 0;
-        $validated['is_active'] = $request->has('is_active');
+        $isActive = $request->has('is_active') && filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+
+        if ($isActive) {
+            $validated['sort_order'] = !empty($validated['sort_order']) 
+                ? (int)$validated['sort_order'] 
+                : ($faq->sort_order ?: ((Faq::where('is_active', true)->max('sort_order') ?? 0) + 1));
+        } else {
+            $validated['sort_order'] = $faq->sort_order ?: ((int)(Faq::max('sort_order') ?? 0) + 1);
+        }
+
+        $validated['is_active'] = $isActive;
 
         $faq->update($validated);
 

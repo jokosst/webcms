@@ -30,6 +30,9 @@ class SettingController extends Controller
         if (!isset($inputs['chatbot_ai_enabled'])) {
             $inputs['chatbot_ai_enabled'] = '0';
         }
+        if (!isset($inputs['lab_booking_enabled'])) {
+            $inputs['lab_booking_enabled'] = '0';
+        }
 
         foreach ($inputs as $key => $value) {
             SiteSetting::setKey($key, $value);
