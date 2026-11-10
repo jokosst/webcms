@@ -14,8 +14,11 @@ use App\Models\Service;
 use App\Models\SiteSetting;
 use App\Models\TeamMember;
 use App\Models\Testimonial;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -112,11 +115,12 @@ class HomeController extends Controller
             'tagline' => 'Pusat Pengelolaan Sistem Informasi, Jaringan & Cloud Infrastructure',
         ]);
 
-        // Generate random math captcha for anti-bot protection
-        $num1 = rand(3, 9);
-        $num2 = rand(1, 8);
-        $captchaQuestion = "{$num1} + {$num2}";
-        session(['captcha_answer' => $num1 + $num2]);
+        // Generate dynamic math captcha & signed token for anti-bot protection
+        $contactNum1 = rand(3, 9);
+        $contactNum2 = rand(2, 8);
+        $captchaQuestion = "{$contactNum1} + {$contactNum2}";
+        $contactCaptchaToken = hash_hmac('sha256', "contact:{$contactNum1}+{$contactNum2}", config('app.key'));
+        session(['captcha_answer' => $contactNum1 + $contactNum2]);
 
         $heroBanners = HeroBanner::where('is_active', true)->orderBy('sort_order', 'asc')->get();
         $services = Service::with('category')->where('is_active', true)->orderBy('sort_order', 'asc')->get();
@@ -139,13 +143,63 @@ class HomeController extends Controller
             'faqs',
             'settings',
             'captchaQuestion',
+            'contactNum1',
+            'contactNum2',
+            'contactCaptchaToken',
             'laboratories'
         ));
     }
 
+    /**
+     * Refresh dynamic math captcha numbers and signed HMAC token asynchronously
+     */
+    public function refreshContactCaptcha(): JsonResponse
+    {
+        $num1 = rand(3, 9);
+        $num2 = rand(2, 8);
+        $token = hash_hmac('sha256', "contact:{$num1}+{$num2}", config('app.key'));
+        session(['captcha_answer' => $num1 + $num2]);
+
+        return response()->json([
+            'num1' => $num1,
+            'num2' => $num2,
+            'token' => $token,
+        ]);
+    }
+
     public function submitContact(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $redirectTarget = url('/#helpdesk');
+        $failedRateKey = 'contact-failed:' . $request->ip();
+        $submitRateKey = 'contact-submit:' . $request->ip();
+
+        // Lapis 3: Rate Limiting / Brute-Force & Spam Shield (maksimal 5x per menit)
+        if (RateLimiter::tooManyAttempts($failedRateKey, 5)) {
+            $seconds = RateLimiter::availableIn($failedRateKey);
+
+            return redirect()->to($redirectTarget)
+                ->withInput($request->except('captcha_input'))
+                ->with('captcha_error', "Terlalu banyak percobaan gagal (maksimal 5 kali per menit). Silakan tunggu {$seconds} detik sebelum mencoba lagi.");
+        }
+
+        if (RateLimiter::tooManyAttempts($submitRateKey, 5)) {
+            $seconds = RateLimiter::availableIn($submitRateKey);
+
+            return redirect()->to($redirectTarget)
+                ->withInput($request->except('captcha_input'))
+                ->with('captcha_error', "Batas pengiriman tiket tercapai (maksimal 5 kali per menit). Silakan tunggu {$seconds} detik sebelum mencoba lagi.");
+        }
+
+        // Lapis 1: Invisible Honeypot Trap (Perangkap Bot Otomatis)
+        if ($request->filled('_hp_website_title')) {
+            RateLimiter::hit($failedRateKey, 60);
+
+            return redirect()->to($redirectTarget)
+                ->withInput($request->except('captcha_input'))
+                ->with('captcha_error', 'Permintaan Anda terdeteksi sebagai aktivitas bot otomatis dan diblokir oleh sistem.');
+        }
+
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:50',
@@ -153,19 +207,49 @@ class HomeController extends Controller
             'message' => 'required|string|max:5000',
             'captcha_input' => 'required|integer',
         ], [
+            'name.required' => 'Nama lengkap / instansi wajib diisi.',
+            'email.required' => 'Alamat email resmi wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'message.required' => 'Rincian pesan / kendala teknis wajib diisi.',
             'captcha_input.required' => 'Kode verifikasi keamanan (anti-bot) wajib diisi.',
             'captcha_input.integer' => 'Kode verifikasi harus berupa angka.',
         ]);
 
-        if (session()->has('captcha_answer') && (int) $request->input('captcha_input') !== (int) session('captcha_answer')) {
-            return redirect()->to(url('/#helpdesk'))
-                ->withInput()
-                ->with('captcha_error', 'Kode verifikasi keamanan (anti-bot) tidak cocok. Silakan coba lagi.');
+        if ($validator->fails()) {
+            RateLimiter::hit($failedRateKey, 60);
+
+            return redirect()->to($redirectTarget)
+                ->withErrors($validator)
+                ->withInput($request->except('captcha_input'));
         }
 
-        // Clear captcha answer after successful verification
-        session()->forget('captcha_answer');
+        // Lapis 2: Dynamic Math Verification (Tantangan Manusia Visual + HMAC Token)
+        $captchaInput = (int) $request->input('captcha_input');
+        $num1 = (int) $request->input('captcha_num1');
+        $num2 = (int) $request->input('captcha_num2');
+        $token = (string) $request->input('captcha_token');
 
+        $expectedSum = $num1 + $num2;
+        $isValidHmac = $token !== ''
+            && $num1 > 0
+            && $num2 > 0
+            && hash_equals(hash_hmac('sha256', "contact:{$num1}+{$num2}", config('app.key')), $token);
+        $isTokenAnswerValid = $isValidHmac && ($captchaInput === $expectedSum);
+        $isSessionAnswerValid = session()->has('captcha_answer') && ($captchaInput === (int) session('captcha_answer'));
+
+        if (!$isTokenAnswerValid && !$isSessionAnswerValid) {
+            RateLimiter::hit($failedRateKey, 60);
+
+            return redirect()->to($redirectTarget)
+                ->withInput($request->except('captcha_input'))
+                ->with('captcha_error', 'Jawaban verifikasi matematika (anti-bot) tidak cocok. Silakan hitung ulang atau klik Segarkan Soal.');
+        }
+
+        // Clear captcha answer after successful verification & record submit rate window
+        session()->forget('captcha_answer');
+        RateLimiter::hit($submitRateKey, 60);
+
+        $validated = $validator->validated();
         unset($validated['captcha_input']);
 
         InboxLead::create([
@@ -174,7 +258,7 @@ class HomeController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        return redirect()->to(url('/#helpdesk'))->with('success', 'Tiket bantuan IT Helpdesk berhasil dikirim! Tim operasional kami akan segera menghubungi Anda.');
+        return redirect()->to($redirectTarget)->with('success', 'Tiket bantuan IT Helpdesk berhasil dikirim! Tim operasional kami akan segera menghubungi Anda.');
     }
 
     public function allArticles(Request $request): View
@@ -227,14 +311,79 @@ class HomeController extends Controller
         $profile = CompanyProfile::first();
         $settings = SiteSetting::all()->pluck('value', 'key');
 
-        return view('articles.show', compact('article', 'recentArticles', 'profile', 'settings'));
+        // Generate Math Captcha Anti-Bot
+        $commentCaptchaNum1 = rand(3, 9);
+        $commentCaptchaNum2 = rand(2, 8);
+        $commentCaptchaToken = hash_hmac('sha256', "comment:{$commentCaptchaNum1}+{$commentCaptchaNum2}", config('app.key'));
+        session(['article_comment_captcha' => $commentCaptchaNum1 + $commentCaptchaNum2]);
+
+        return view('articles.show', compact(
+            'article',
+            'recentArticles',
+            'profile',
+            'settings',
+            'commentCaptchaNum1',
+            'commentCaptchaNum2',
+            'commentCaptchaToken'
+        ));
+    }
+
+    /**
+     * Refresh math captcha numbers and signed token for article comments
+     */
+    public function refreshCommentCaptcha(): JsonResponse
+    {
+        $num1 = rand(3, 9);
+        $num2 = rand(2, 8);
+        $token = hash_hmac('sha256', "comment:{$num1}+{$num2}", config('app.key'));
+        session(['article_comment_captcha' => $num1 + $num2]);
+
+        return response()->json([
+            'num1' => $num1,
+            'num2' => $num2,
+            'token' => $token,
+        ]);
     }
 
     public function submitArticleComment(Request $request, Article $article): RedirectResponse
     {
+        $redirectUrl = url()->previous() . '#comments';
+
         if (isset($article->allow_comments) && !$article->allow_comments) {
-            return back()->with('comment_error', 'Maaf, kolom komentar untuk artikel ini telah ditutup oleh admin.');
+            return redirect()->to($redirectUrl)->with('comment_error', 'Maaf, kolom komentar untuk artikel ini telah ditutup oleh admin.');
         }
+
+        // 1. Honeypot check (anti-bot trap)
+        if ($request->filled('_hp_website_title')) {
+            return redirect()->to($redirectUrl)
+                ->withInput()
+                ->with('comment_error', 'Permintaan Anda terdeteksi sebagai spam otomatis (bot).');
+        }
+
+        // 2. Anti-Bot Math Captcha verification
+        $request->validate([
+            'captcha_input' => 'required|integer',
+        ], [
+            'captcha_input.required' => 'Verifikasi keamanan (Anti-Bot) wajib diisi.',
+            'captcha_input.integer' => 'Hasil verifikasi anti-bot harus berupa angka.',
+        ]);
+
+        $captchaInput = (int) $request->input('captcha_input');
+        $num1 = (int) $request->input('captcha_num1');
+        $num2 = (int) $request->input('captcha_num2');
+        $token = (string) $request->input('captcha_token');
+
+        $expectedSum = $num1 + $num2;
+        $isValidToken = hash_equals(hash_hmac('sha256', "comment:{$num1}+{$num2}", config('app.key')), $token);
+        $isSessionValid = session()->has('article_comment_captcha') && $captchaInput === (int) session('article_comment_captcha');
+
+        if ((!$isValidToken || $captchaInput !== $expectedSum) && !$isSessionValid) {
+            return redirect()->to($redirectUrl)
+                ->withInput()
+                ->with('comment_error', 'Hasil penjumlahan verifikasi keamanan (Anti-Bot) tidak tepat. Silakan hitung dan coba lagi.');
+        }
+
+        session()->forget('article_comment_captcha');
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -253,6 +402,6 @@ class HomeController extends Controller
             'is_approved' => true,
         ]);
 
-        return back()->with('comment_success', 'Komentar Anda berhasil dikirim!');
+        return redirect()->to($redirectUrl)->with('comment_success', 'Komentar Anda berhasil dikirim!');
     }
 }

@@ -7,16 +7,40 @@
 <div class="py-12 sm:py-16 transition-colors duration-300"
      x-data="{
         viewMode: '{{ $viewMode ?? 'calendar' }}',
-        bookingModalOpen: false,
+        bookingModalOpen: {{ ($errors->any() || session('captcha_error') || (session('error') && old('borrower_name'))) ? 'true' : 'false' }},
         trackModalOpen: false,
         detailDayModalOpen: false,
         labDetailModalOpen: false,
         selectedLabDetail: null,
         selectedDayData: null,
-        selectedLabIds: [{{ $currentLab ? "'".$currentLab->id."'" : '' }}],
-        prefillDate: '',
-        endDate: '',
+        selectedLabIds: [{{ old('laboratory_ids') ? collect(old('laboratory_ids'))->map(fn($id) => "'$id'")->join(',') : ($currentLab ? "'".$currentLab->id."'" : '') }}],
+        prefillDate: '{{ old('booking_date', '') }}',
+        endDate: '{{ old('end_date', '') }}',
         allLabIds: [{{ $laboratories->pluck('id')->map(fn($id) => "'$id'")->join(',') }}],
+        captchaNum1: {{ $captchaNum1 ?? 5 }},
+        captchaNum2: {{ $captchaNum2 ?? 3 }},
+        captchaToken: '{{ $captchaToken ?? '' }}',
+        captchaInput: '',
+        isCaptchaRefreshing: false,
+
+        async refreshCaptcha() {
+            this.isCaptchaRefreshing = true;
+            try {
+                const res = await fetch('{{ route('lab-schedule.captcha-refresh') }}');
+                if (res.ok) {
+                    const data = await res.json();
+                    this.captchaNum1 = data.num1;
+                    this.captchaNum2 = data.num2;
+                    this.captchaToken = data.token;
+                    this.captchaInput = '';
+                }
+            } catch (e) {
+                console.error('Failed to refresh captcha', e);
+            } finally {
+                this.isCaptchaRefreshing = false;
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            }
+        },
         labCapacities: {
             @foreach($laboratories as $lab)
                 '{{ $lab->id }}': {{ $lab->capacity }},
@@ -817,6 +841,13 @@
             <form method="POST" action="{{ route('lab-schedule.store') }}" enctype="multipart/form-data" class="overflow-y-auto flex-1 p-6 space-y-5 text-xs text-slate-300">
                 @csrf
 
+                @if(session('captcha_error') || (session('error') && old('borrower_name')))
+                    <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5 shadow-md">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0 mt-0.5"></i>
+                        <span class="leading-relaxed">{{ session('captcha_error') ?? session('error') }}</span>
+                    </div>
+                @endif
+
                 <!-- Laboratory Multi-Select Checkbox Cards -->
                 <div class="space-y-2.5">
                     <div class="flex items-center justify-between">
@@ -1032,6 +1063,61 @@
                     </label>
                     <textarea name="event_description" rows="2.5" placeholder="Sebutkan jika membutuhkan instalasi software khusus, sound system, atau mic wireless."
                               class="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all"></textarea>
+                </div>
+
+                <!-- Verifikasi Keamanan (Anti-Bot) -->
+                <div class="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+                            <span>Verifikasi Keamanan (Anti-Bot) <span class="text-rose-400">*</span></span>
+                        </label>
+                        <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">Buktikan Anda bukan bot</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="px-4 py-2.5 rounded-xl bg-slate-800 border border-cyan-500/30 font-mono font-black text-sm text-cyan-400 shrink-0 select-none flex items-center justify-between sm:justify-start gap-3 shadow-inner">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="calculator" class="w-4 h-4 text-cyan-400"></i>
+                                <span class="tracking-wider text-sm" x-text="captchaNum1 + ' + ' + captchaNum2 + ' = ?'"></span>
+                            </div>
+                            <button type="button" 
+                                    @click="refreshCaptcha()" 
+                                    :class="isCaptchaRefreshing ? 'animate-spin' : ''" 
+                                    title="Ganti angka verifikasi baru" 
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-700/60 transition-colors cursor-pointer">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <div class="relative flex-1">
+                            <input type="number" 
+                                   name="captcha_input" 
+                                   x-model="captchaInput" 
+                                   required 
+                                   placeholder="Ketik hasil penjumlahan di samping..." 
+                                   class="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="captcha_num1" :value="captchaNum1">
+                    <input type="hidden" name="captcha_num2" :value="captchaNum2">
+                    <input type="hidden" name="captcha_token" :value="captchaToken">
+
+                    <!-- Honeypot Field (Trap for automated bots) -->
+                    <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+                        <input type="text" name="_hp_website_title" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    @if(session('captcha_error') || $errors->has('captcha_input'))
+                        <p class="text-rose-400 text-xs font-semibold flex items-center gap-1.5 pt-1">
+                            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                            <span>{{ session('captcha_error') ?? $errors->first('captcha_input') }}</span>
+                        </p>
+                    @else
+                        <p class="text-[11px] text-slate-400">
+                            Masukkan hasil penjumlahan matematika sederhana di atas untuk membuktikan Anda pengunjung manusia.
+                        </p>
+                    @endif
                 </div>
 
                 <!-- Submit Button -->

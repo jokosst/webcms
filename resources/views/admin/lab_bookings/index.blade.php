@@ -24,9 +24,11 @@
                 <i data-lucide="external-link" class="w-4 h-4"></i>
                 <span>Kalender Publik</span>
             </a>
-            <a href="{{ route('admin.lab-bookings.create') }}" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 transition-all cursor-pointer">
-                <i data-lucide="calendar-plus" class="w-4 h-4 text-slate-950"></i>
-                <span>Agenda Lab</span>
+            <a href="{{ route('admin.lab-bookings.create') }}" 
+               style="background: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%) !important; color: #ffffff !important;"
+               class="px-4 py-2 bg-indigo-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all cursor-pointer">
+                <i data-lucide="calendar-plus" class="w-4 h-4 text-white"></i>
+                <span class="text-white font-bold">Agenda Lab</span>
             </a>
         </div>
     </div>

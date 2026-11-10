@@ -5,6 +5,8 @@
     $ig = $social['instagram'] ?? $social['instagram_url'] ?? $settings['social_instagram'] ?? $settings['instagram'] ?? null;
     $tw = $social['twitter'] ?? $social['x'] ?? $social['twitter_url'] ?? $settings['social_twitter'] ?? $settings['twitter'] ?? null;
     $yt = $social['youtube'] ?? $social['youtube_url'] ?? $settings['social_youtube'] ?? $settings['youtube'] ?? null;
+    $isChatbotActiveForHeader = ($settings['chatbot_enabled'] ?? '1') === '1'
+        && ($settings['header_helpdesk_action'] ?? 'chatbot') === 'chatbot';
 @endphp
 
 <div class="transition-colors duration-300 text-xs py-2 px-4 sm:px-8 flex items-center justify-between gap-4 z-50 border-b"
@@ -107,7 +109,7 @@
                 <a href="{{ route('articles.index') }}" class="hover:text-cyan-500 transition-colors py-2">{{ __('Berita') }}</a>
                 <a href="{{ route('home') }}#portofolio" class="hover:text-cyan-500 transition-colors py-2">{{ __('Portofolio') }}</a>
                 <a href="{{ route('home') }}#tim-ahli" class="hover:text-cyan-500 transition-colors py-2">{{ __('Tim') }}</a>
-                <a href="{{ route('home') }}#faq" class="hover:text-cyan-500 transition-colors py-2">{{ __('FAQ') }}</a>
+                <a href="{{ route('home') }}#faq" class="hover:text-cyan-500 transition-colors py-2 whitespace-nowrap">{{ __('FAQ & Tiket') }}</a>
             </nav>
 
             <!-- Desktop Theme Toggle & Helpdesk CTA (Visible only on LG screens alongside desktop nav) -->
@@ -131,7 +133,7 @@
                 </button>
 
                 <!-- HELPDESK CTA BUTTON -->
-                @if(($settings['chatbot_enabled'] ?? '1') === '1')
+                @if($isChatbotActiveForHeader)
                     <button type="button" 
                             onclick="window.openItChatbot()"
                             @click="window.openItChatbot()" 
@@ -188,8 +190,9 @@
         <a href="{{ route('articles.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Berita') }}</a>
         <a href="{{ route('home') }}#portofolio" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Portofolio') }}</a>
         <a href="{{ route('home') }}#tim-ahli" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('Tim') }}</a>
+        <a href="{{ route('home') }}#faq" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-xl text-sm font-bold" :class="darkMode ? 'text-slate-200 hover:bg-slate-900 hover:text-cyan-400' : 'text-slate-700 hover:bg-slate-100 hover:text-cyan-600'">{{ __('FAQ & Tiket') }}</a>
         
-        @if(($settings['chatbot_enabled'] ?? '1') === '1')
+        @if($isChatbotActiveForHeader)
             <button type="button" 
                     onclick="window.openItChatbot()"
                     @click="mobileMenuOpen = false; window.openItChatbot()" 

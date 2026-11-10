@@ -28,9 +28,11 @@ Route::get('/', [HomeController::class, 'company'])->name('home');
 // Route::get('/desa2', [HomeController::class, 'desa2'])->name('desa2');
 // Route::get('/desa1', [HomeController::class, 'desa1'])->name('desa1');
 // Route::get('/home', [HomeController::class, 'index'])->name('desa2');
+Route::get('/contact/captcha-refresh', [HomeController::class, 'refreshContactCaptcha'])->name('contact.captcha-refresh');
 Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact.submit');
 Route::get('/berita', [HomeController::class, 'allArticles'])->name('articles.index');
 Route::get('/berita/{slug}', [HomeController::class, 'showArticle'])->name('articles.show');
+Route::get('/articles/captcha-refresh', [HomeController::class, 'refreshCommentCaptcha'])->name('articles.comment.captcha-refresh');
 Route::post('/articles/{article}/comment', [HomeController::class, 'submitArticleComment'])->name('articles.comment.submit');
 
 //pemdi
@@ -40,6 +42,7 @@ Route::get('/pemdi', function () {
 
 // Public Lab Schedule & Booking Routes
 Route::get('/jadwal-lab', [LabScheduleController::class, 'index'])->name('lab-schedule.index');
+Route::get('/jadwal-lab/captcha-refresh', [LabScheduleController::class, 'refreshCaptcha'])->name('lab-schedule.captcha-refresh');
 Route::post('/jadwal-lab/ajukan', [LabScheduleController::class, 'store'])->name('lab-schedule.store');
 Route::post('/jadwal-lab/cek-status', [LabScheduleController::class, 'checkStatus'])->name('lab-schedule.check-status');
 

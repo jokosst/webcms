@@ -118,7 +118,33 @@
 
                     <!-- COMMENTS SECTION -->
                     @if($article->allow_comments ?? true)
-                    <section id="comments" class="pt-10 border-t-2 space-y-8" :class="darkMode ? 'border-slate-800' : 'border-slate-100'" x-data="{ activeReplyForm: null }">
+                    <section id="comments" class="pt-10 border-t-2 space-y-8" :class="darkMode ? 'border-slate-800' : 'border-slate-100'" 
+                             x-data="{ 
+                                 activeReplyForm: {{ old('parent_id') ? old('parent_id') : 'null' }},
+                                 captchaNum1: {{ $commentCaptchaNum1 ?? 5 }},
+                                 captchaNum2: {{ $commentCaptchaNum2 ?? 3 }},
+                                 captchaToken: '{{ $commentCaptchaToken ?? '' }}',
+                                 captchaInput: '',
+                                 isCaptchaRefreshing: false,
+                                 async refreshCaptcha() {
+                                     this.isCaptchaRefreshing = true;
+                                     try {
+                                         const res = await fetch('{{ route('articles.comment.captcha-refresh') }}');
+                                         if (res.ok) {
+                                             const data = await res.json();
+                                             this.captchaNum1 = data.num1;
+                                             this.captchaNum2 = data.num2;
+                                             this.captchaToken = data.token;
+                                             this.captchaInput = '';
+                                         }
+                                     } catch (e) {
+                                         console.error('Failed to refresh comment captcha', e);
+                                     } finally {
+                                         this.isCaptchaRefreshing = false;
+                                         this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                                     }
+                                 }
+                             }">
                         
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
@@ -137,6 +163,13 @@
                             <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-extrabold flex items-center gap-3">
                                 <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
                                 <span>{{ session('comment_success') }}</span>
+                            </div>
+                        @endif
+
+                        @if(session('comment_error') || $errors->any())
+                            <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs sm:text-sm font-bold flex items-center gap-3">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-400 flex-shrink-0"></i>
+                                <span>{{ session('comment_error') ?? $errors->first() }}</span>
                             </div>
                         @endif
 
@@ -186,18 +219,45 @@
                                             
                                             <div class="grid sm:grid-cols-2 gap-3">
                                                 <div>
-                                                    <input type="text" name="name" required placeholder="{{ __('Nama') }} *" class="w-full px-3.5 py-2 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                                                    <input type="text" name="name" value="{{ old('parent_id') == $comment->id ? old('name') : '' }}" required placeholder="{{ __('Nama') }} *" class="w-full px-3.5 py-2 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
                                                 </div>
                                                 <div>
-                                                    <input type="email" name="email" required placeholder="{{ __('Email') }} *" class="w-full px-3.5 py-2 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                                                    <input type="email" name="email" value="{{ old('parent_id') == $comment->id ? old('email') : '' }}" required placeholder="{{ __('Email') }} *" class="w-full px-3.5 py-2 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
                                                 </div>
                                             </div>
                                             <div>
-                                                <textarea name="comment" rows="2" required placeholder="{{ __('Komentar Anda') }}..." class="w-full px-3.5 py-2 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'"></textarea>
+                                                <textarea name="comment" rows="2" required placeholder="{{ __('Komentar Anda') }}..." class="w-full px-3.5 py-2 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">{{ old('parent_id') == $comment->id ? old('comment') : '' }}</textarea>
                                             </div>
+
+                                            <!-- Compact Anti-Bot for Reply Form -->
+                                            <div class="p-3 rounded-lg border space-y-2" :class="darkMode ? 'bg-slate-950/70 border-slate-800' : 'bg-slate-100/70 border-slate-200'">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-[11px] font-bold flex items-center gap-1.5" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+                                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                                        <span>{{ __('Verifikasi Anti-Bot') }} *</span>
+                                                    </span>
+                                                    <span class="text-[10px] text-slate-400">{{ __('Hitung penjumlahan berikut:') }}</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <div class="px-3 py-1.5 rounded-lg font-mono font-black text-xs text-cyan-400 shrink-0 select-none flex items-center gap-2 border" :class="darkMode ? 'bg-slate-900 border-cyan-500/30' : 'bg-white border-cyan-500/30'">
+                                                        <span x-text="captchaNum1 + ' + ' + captchaNum2 + ' = ?'"></span>
+                                                        <button type="button" @click="refreshCaptcha()" :class="isCaptchaRefreshing ? 'animate-spin' : ''" title="{{ __('Ganti angka verifikasi baru') }}" class="text-slate-400 hover:text-cyan-400 cursor-pointer">
+                                                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                                        </button>
+                                                    </div>
+                                                    <input type="number" name="captcha_input" required placeholder="{{ __('Ketik hasil...') }}" class="w-full px-3 py-1.5 rounded-lg border text-xs focus:border-cyan-500 focus:outline-none transition-all" :class="darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'">
+                                                </div>
+                                                <input type="hidden" name="captcha_num1" :value="captchaNum1">
+                                                <input type="hidden" name="captcha_num2" :value="captchaNum2">
+                                                <input type="hidden" name="captcha_token" :value="captchaToken">
+                                                <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+                                                    <input type="text" name="_hp_website_title" tabindex="-1" autocomplete="off">
+                                                </div>
+                                            </div>
+
                                             <div class="flex justify-end gap-2">
-                                                <button type="button" @click="activeReplyForm = null" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold">Batal</button>
-                                                <button type="submit" class="px-4 py-1.5 rounded-lg bg-cyan-500 text-slate-950 text-xs font-extrabold shadow-md transition-all">Kirim Balasan</button>
+                                                <button type="button" @click="activeReplyForm = null" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold cursor-pointer">Batal</button>
+                                                <button type="submit" style="background: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%) !important; color: #ffffff !important;" class="px-4 py-1.5 rounded-lg bg-cyan-500 text-white text-xs font-extrabold shadow-md transition-all cursor-pointer">Kirim Balasan</button>
                                             </div>
                                         </form>
                                     </div>
@@ -247,22 +307,79 @@
                                 <div class="grid sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-bold text-slate-300 mb-1.5">{{ __('Nama Lengkap') }} *</label>
-                                        <input type="text" name="name" required placeholder="{{ __('Nama') }}..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-cyan-500 focus:outline-none transition-all">
+                                        <input type="text" name="name" value="{{ old('parent_id') ? '' : old('name') }}" required placeholder="{{ __('Nama') }}..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-cyan-500 focus:outline-none transition-all">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-300 mb-1.5">{{ __('Alamat Email') }} *</label>
-                                        <input type="email" name="email" required placeholder="nama@email.com" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-cyan-500 focus:outline-none transition-all">
+                                        <input type="email" name="email" value="{{ old('parent_id') ? '' : old('email') }}" required placeholder="nama@email.com" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-cyan-500 focus:outline-none transition-all">
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-xs font-bold text-slate-300 mb-1.5">{{ __('Komentar Anda') }} *</label>
-                                    <textarea name="comment" rows="4" required placeholder="{{ __('Tuliskan komentar atau masukan Anda secara santun...') }}" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-cyan-500 focus:outline-none transition-all"></textarea>
+                                    <textarea name="comment" rows="4" required placeholder="{{ __('Tuliskan komentar atau masukan Anda secara santun...') }}" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-cyan-500 focus:outline-none transition-all">{{ old('parent_id') ? '' : old('comment') }}</textarea>
+                                </div>
+
+                                <!-- Verifikasi Keamanan (Anti-Bot) -->
+                                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5">
+                                    <div class="flex items-center justify-between">
+                                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                            <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+                                            <span>{{ __('Verifikasi Keamanan (Anti-Bot)') }} <span class="text-rose-400">*</span></span>
+                                        </label>
+                                        <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">{{ __('Buktikan Anda bukan bot') }}</span>
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                        <div class="px-4 py-2.5 rounded-xl bg-slate-950 border border-cyan-500/30 font-mono font-black text-sm text-cyan-400 shrink-0 select-none flex items-center justify-between sm:justify-start gap-3 shadow-inner">
+                                            <div class="flex items-center gap-2">
+                                                <i data-lucide="calculator" class="w-4 h-4 text-cyan-400"></i>
+                                                <span class="tracking-wider text-sm" x-text="captchaNum1 + ' + ' + captchaNum2 + ' = ?'"></span>
+                                            </div>
+                                            <button type="button" 
+                                                    @click="refreshCaptcha()" 
+                                                    :class="isCaptchaRefreshing ? 'animate-spin' : ''" 
+                                                    title="{{ __('Ganti angka verifikasi baru') }}" 
+                                                    class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition-colors cursor-pointer">
+                                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </div>
+                                        <div class="relative flex-1">
+                                            <input type="number" 
+                                                   name="captcha_input" 
+                                                   x-model="captchaInput" 
+                                                   required 
+                                                   placeholder="{{ __('Ketik hasil penjumlahan di samping...') }}" 
+                                                   class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all">
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" name="captcha_num1" :value="captchaNum1">
+                                    <input type="hidden" name="captcha_num2" :value="captchaNum2">
+                                    <input type="hidden" name="captcha_token" :value="captchaToken">
+
+                                    <!-- Honeypot Field -->
+                                    <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+                                        <input type="text" name="_hp_website_title" tabindex="-1" autocomplete="off">
+                                    </div>
+
+                                    @if((session('comment_error') || $errors->has('captcha_input')) && !old('parent_id'))
+                                        <p class="text-rose-400 text-xs font-semibold flex items-center gap-1.5 pt-1">
+                                            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                                            <span>{{ session('comment_error') ?? $errors->first('captcha_input') }}</span>
+                                        </p>
+                                    @else
+                                        <p class="text-[11px] text-slate-400">
+                                            {{ __('Masukkan hasil penjumlahan matematika sederhana di atas untuk membuktikan Anda bukan bot.') }}
+                                        </p>
+                                    @endif
                                 </div>
 
                                 <div class="flex items-center justify-between pt-2">
-                                    <span class="text-[11px] text-slate-400">Komentar akan langsung dipublikasikan.</span>
-                                    <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-2">
+                                    <span class="text-[11px] text-slate-400">{{ __('Komentar akan langsung dipublikasikan.') }}</span>
+                                    <button type="submit" 
+                                            style="background: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%) !important; color: #ffffff !important;" 
+                                            class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
                                         <span>{{ __('Kirim Komentar') }}</span>
                                         <i data-lucide="send" class="w-4 h-4"></i>
                                     </button>

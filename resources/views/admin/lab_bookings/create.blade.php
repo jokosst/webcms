@@ -403,9 +403,10 @@
             </a>
 
             <button type="submit" 
-                    class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs shadow-lg shadow-cyan-500/25 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-slate-950"></i>
-                <span>Simpan & Aktifkan di Kalender</span>
+                    style="background: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%) !important; color: #ffffff !important;"
+                    class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:opacity-90 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.02]">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-white"></i>
+                <span class="text-white font-bold">Simpan & Aktifkan di Kalender</span>
             </button>
         </div>
 

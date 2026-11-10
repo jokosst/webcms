@@ -6,6 +6,12 @@
     "Portofolio": "Portfolio",
     "Tim": "Team",
     "FAQ": "FAQ",
+    "FAQ & Tiket": "FAQ & Ticket",
+    "Pusat Bantuan, FAQ & Ticketing": "Help Center, FAQ & Ticketing",
+    "FAQ & Layanan Tiket Helpdesk": "FAQ & Helpdesk Ticket Service",
+    "Temukan jawaban cepat seputar layanan TIK pada daftar FAQ, atau ajukan tiket bantuan teknis langsung ke tim operasional kami.": "Find quick answers about IT services in the FAQ list, or submit a technical support ticket directly to our operational team.",
+    "Pusat Informasi & FAQ": "Information Center & FAQ",
+    "Jawaban resmi seputar prosedur permohonan layanan, akun SSO, dan dukungan teknis Unit TIK.": "Official answers regarding service request procedures, SSO accounts, and IT Unit technical support.",
     "Visi & Sambutan": "Vision & Welcome",
     "Artikel & Berita": "Articles & News",
     "Portofolio Proyek": "Project Portfolio",
@@ -100,5 +106,8 @@
     "Artikel Terkait": "Related Articles",
     "Belum ada komentar. Jadilah yang pertama berkomentar!": "No comments yet. Be the first to comment!",
     "Verifikasi Keamanan (Anti-Bot)": "Security Verification (Anti-Bot)",
-    "Masukkan hasil penjumlahan angka di samping...": "Enter the sum of the numbers on the side..."
+    "Masukkan hasil penjumlahan angka di samping...": "Enter the sum of the numbers on the side...",
+    "Segarkan Soal": "Refresh Question",
+    "Perlindungan Anti-Bot & Spam": "Anti-Bot & Spam Protection",
+    "Dilindungi verifikasi hitung acak, perangkap anti-bot, dan batas percobaan (maksimal 5x/menit).": "Protected by random math verification, invisible anti-bot trap, and rate limiting (max 5 attempts/min)."
 }

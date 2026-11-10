@@ -788,208 +788,306 @@
         </div>
     </section>
 
-    <!-- SECTION 8: FAQ (FREQUENTLY ASKED QUESTIONS) -->
-    <section id="faq" class="py-20 relative border-b transition-colors duration-300"
+    <!-- SECTION 8: PUSAT BANTUAN TERPADU (2 LAYOUT: FAQ & TIKET HELPDESK) -->
+    @php
+        $chatbotEnabled = ($settings['chatbot_enabled'] ?? '1') === '1';
+        $landingHelpdeskMode = $settings['landing_helpdesk_mode'] ?? 'ticket_form';
+        $showChatbotBannerOnLanding = $chatbotEnabled && in_array($landingHelpdeskMode, ['chatbot_banner', 'both'], true);
+        $showTicketFormOnLanding = !$chatbotEnabled || in_array($landingHelpdeskMode, ['ticket_form', 'both'], true);
+    @endphp
+    <section id="faq" class="py-20 relative border-t transition-colors duration-300 scroll-mt-16"
              :class="darkMode ? 'bg-slate-900/60 border-slate-800/80' : 'bg-slate-100/70 border-slate-200'">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+
+            <!-- Unified Section Heading -->
+            <div class="text-center max-w-3xl mx-auto space-y-3">
                 <span class="inline-block px-3.5 py-1 rounded-full text-xs font-black border uppercase tracking-widest"
                       :class="darkMode ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'">
-                    {{ __('Pusat Informasi & FAQ') }}
+                    {{ __('Pusat Bantuan, FAQ & Ticketing') }}
                 </span>
                 <h2 class="text-3xl sm:text-4xl font-extrabold font-heading tracking-tight"
                     :class="darkMode ? 'text-white' : 'text-slate-900'">
-                    {{ __('Pertanyaan Yang Sering Diajukan') }}
+                    {{ __('FAQ & Layanan Tiket Helpdesk') }}
                 </h2>
                 <p class="text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
-                    {{ __('Jawaban resmi seputar prosedur permohonan layanan, akun SSO, dan dukungan teknis Unit TIK.') }}
+                    {{ __('Temukan jawaban cepat seputar layanan TIK pada daftar FAQ, atau ajukan tiket bantuan teknis langsung ke tim operasional kami.') }}
                 </p>
             </div>
 
-            @if($faqs->count() > 0)
-                <div class="space-y-4" x-data="{ openFaq: null }">
-                    @foreach($faqs as $index => $faq)
-                        <div class="rounded-2xl border overflow-hidden transition-all duration-300"
-                             :class="darkMode ? 'glass-card-dark border-slate-800' : 'glass-card-light border-slate-200'">
-                            <button @click="openFaq = (openFaq === {{ $index }} ? null : {{ $index }})" 
-                                    class="w-full p-5 text-left font-bold flex justify-between items-center text-sm hover:text-cyan-500 transition-colors"
-                                    :class="darkMode ? 'text-white' : 'text-slate-900'">
-                                <span>{{ $faq->question }}</span>
-                                <i data-lucide="chevron-down" class="w-5 h-5 transition-transform duration-300" :class="openFaq === {{ $index }} ? 'rotate-180 text-cyan-500' : 'text-slate-400'"></i>
-                            </button>
-                            <div x-show="openFaq === {{ $index }}" x-transition 
-                                 class="p-5 pt-0 text-xs leading-relaxed border-t"
-                                 :class="darkMode ? 'text-slate-300 border-slate-800/50' : 'text-slate-600 border-slate-200'">
-                                {{ $faq->answer }}
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="space-y-4" x-data="{ openFaq: 0 }">
-                    <div class="rounded-2xl p-5 space-y-2" :class="darkMode ? 'glass-card-dark' : 'glass-card-light'">
-                        <h4 class="text-sm font-extrabold" :class="darkMode ? 'text-white' : 'text-slate-900'">{{ __('Bagaimana cara mengajukan bantuan teknis / masalah jaringan?') }}</h4>
-                        <p class="text-xs" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">{{ __('Anda dapat mengisi formulir IT Helpdesk di bawah ini atau menghubungi kontak resmi Unit TIK.') }}</p>
-                    </div>
-                    <div class="rounded-2xl p-5 space-y-2" :class="darkMode ? 'glass-card-dark' : 'glass-card-light'">
-                        <h4 class="text-sm font-extrabold" :class="darkMode ? 'text-white' : 'text-slate-900'">{{ __('Apakah Ruang Lab Komputer bisa dipinjam untuk kegiatan pelatihan?') }}</h4>
-                        <p class="text-xs" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">{{ __('Ya, Ruang Komputer dapat digunaan untuk workshop, sertifikasi, dan pelatihan dengan mengajukan surat izin penggunaan lab.') }}</p>
-                    </div>
-                </div>
-            @endif
+            <!-- 2-Column Layout Grid: Kiri (FAQ) & Kanan (Tiket Helpdesk / Chatbot) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
 
-        </div>
-    </section>
-
-    <!-- SECTION 9: IT HELPDESK & SUPPORT TICKET FORM / LIVE ASSISTANT -->
-    <section id="helpdesk" class="py-20 relative transition-colors duration-300"
-             :class="darkMode ? 'bg-slate-950' : 'bg-white'">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            @if(($settings['chatbot_enabled'] ?? '1') === '1')
-                <!-- KONDISI 1: JIKA CHATBOT AKTIF -> TAMPILKAN INTERACTIVE LIVE ASSISTANT BANNER & SEMBUNYIKAN FORM MANUAL -->
-                <div class="rounded-3xl p-8 sm:p-12 border text-center space-y-6 transition-all duration-300 relative overflow-hidden"
-                     :class="darkMode ? 'glass-card-dark glow-cyan border-cyan-500/30' : 'glass-card-light shadow-2xl border-cyan-200'">
-                    
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-cyan-500/30 border border-cyan-400/30">
-                        <i data-lucide="headphones" class="w-8 h-8 sm:w-10 sm:h-10 animate-bounce"></i>
-                    </div>
-
-                    <div class="space-y-3 max-w-2xl mx-auto">
+                <!-- LAYOUT 1 (KIRI): PERTANYAAN YANG SERING DIAJUKAN (FAQ) -->
+                <div class="lg:col-span-5 rounded-3xl p-6 sm:p-8 border space-y-6 transition-all duration-300"
+                     :class="darkMode ? 'glass-card-dark border-slate-800' : 'glass-card-light shadow-xl border-slate-200'">
+                    <div class="space-y-2.5">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black border uppercase tracking-wider"
                              :class="darkMode ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                            <span>{{ __('Asisten Virtual IT Helpdesk') }}</span>
+                            <i data-lucide="help-circle" class="w-4 h-4"></i>
+                            <span>{{ __('Pusat Informasi & FAQ') }}</span>
                         </div>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold font-heading tracking-tight"
+                        <h3 class="text-2xl font-extrabold font-heading tracking-tight"
                             :class="darkMode ? 'text-white' : 'text-slate-900'">
-                            {{ __('Layanan IT Helpdesk & Konsultasi Cepat') }}
-                        </h2>
-                        <p class="text-xs sm:text-sm leading-relaxed" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
-                            {{ __('Dapatkan panduan solusi otomatis seputar akun SSO, jaringan Wi-Fi, sistem aplikasi, atau buat tiket pengaduan teknis secara langsung melalui Asisten Cerdas kami.') }}
+                            {{ __('Pertanyaan Yang Sering Diajukan') }}
+                        </h3>
+                        <p class="text-xs leading-relaxed" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
+                            {{ __('Jawaban resmi seputar prosedur permohonan layanan, akun SSO, dan dukungan teknis Unit TIK.') }}
                         </p>
                     </div>
 
-                    <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <button type="button" 
-                                onclick="window.openItChatbot()" 
-                                @click="window.openItChatbot()" 
-                                class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/30 transition-all transform hover:scale-105 uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer">
-                            <i data-lucide="message-square" class="w-5 h-5 text-slate-950"></i>
-                            <span>{{ __('Buka Chat Asisten IT Helpdesk') }}</span>
-                        </button>
-                    </div>
-
-                    <div class="pt-4 flex items-center justify-center gap-6 text-[11px] font-semibold text-slate-500 border-t border-slate-800/40">
-                        <span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Respon Cepat 24/7</span>
-                        <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i> Basis Data FAQ Resmi</span>
-                        <span class="flex items-center gap-1.5"><i data-lucide="ticket" class="w-3.5 h-3.5 text-emerald-400"></i> Tiket Langsung ke Tim Teknis</span>
-                    </div>
-                </div>
-
-            @else
-                <!-- KONDISI 2: JIKA CHATBOT NONAKTIF -> TAMPILKAN FORMULIR MANUAL LENGKAP -->
-                <div class="rounded-3xl p-8 sm:p-12 border space-y-8 transition-all duration-300"
-                     :class="darkMode ? 'glass-card-dark glow-cyan border-slate-800' : 'glass-card-light shadow-xl border-slate-200'">
-                    
-                    <div class="text-center space-y-3">
-                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black border uppercase tracking-wider"
-                             :class="darkMode ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'">
-                            <i data-lucide="headphones" class="w-4 h-4"></i>
-                            <span>{{ __('Formulir IT Support & Ticketing') }}</span>
-                        </div>
-                        <h2 class="text-3xl font-extrabold font-heading tracking-tight"
-                            :class="darkMode ? 'text-white' : 'text-slate-900'">
-                            {{ __('Hubungi IT Helpdesk & Tim Operasional') }}
-                        </h2>
-                        <p class="text-xs sm:text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
-                            {{ __('Kirimkan permintaan bantuan teknis, perbaikan jaringan, atau konsultasi server secara langsung.') }}
-                        </p>
-                    </div>
-
-                    @if(session('success'))
-                        <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs font-bold text-center">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if(session('captcha_error') || $errors->has('captcha_input'))
-                        <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold text-center">
-                            {{ session('captcha_error') ?? $errors->first('captcha_input') }}
-                        </div>
-                    @endif
-
-                    <form action="{{ route('contact.submit') }}" method="POST" class="space-y-5">
-                        @csrf
-                        <div class="grid sm:grid-cols-2 gap-5">
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Nama Lengkap / Instansi') }}</label>
-                                <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Budi Santoso (Staf IT)" 
-                                       class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
-                                       :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Email Resmi') }}</label>
-                                <input type="email" name="email" value="{{ old('email') }}" required placeholder="email@perusahaan.com" 
-                                       class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
-                                       :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
-                            </div>
-                        </div>
-
-                        <div class="grid sm:grid-cols-2 gap-5">
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Nomor Telepon / WhatsApp') }}</label>
-                                <input type="text" name="phone" value="{{ old('phone') }}" placeholder="081234567890" 
-                                       class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
-                                       :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Kategori Permintaan') }}</label>
-                                <select name="subject" class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
-                                        :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
-                                    <option value="Perbaikan Sistem Aplikasi Web" {{ old('subject') == 'Perbaikan Sistem Aplikasi Web' ? 'selected' : '' }}>{{ __('Perbaikan Sistem Aplikasi Web') }}</option>
-                                    <option value="Gangguan Jaringan & Wifi" {{ old('subject') == 'Gangguan Jaringan & Wifi' ? 'selected' : '' }}>{{ __('Gangguan Jaringan & Wifi') }}</option>
-                                    <option value="Penggunaan Ruang Komputer Lab" {{ old('subject') == 'Penggunaan Ruang Komputer Lab' ? 'selected' : '' }}>{{ __('Penggunaan Ruang Komputer Lab') }}</option>
-                                    <option value="Permintaan Server AWS/GCP/Private Cloud" {{ old('subject') == 'Permintaan Server AWS/GCP/Private Cloud' ? 'selected' : '' }}>{{ __('Permintaan Server AWS/GCP/Private Cloud') }}</option>
-                                    <option value="Konsultasi IT Umum" {{ old('subject') == 'Konsultasi IT Umum' ? 'selected' : '' }}>{{ __('Konsultasi IT Umum') }}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Rincian Pesan / Kendala Teknis') }}</label>
-                            <textarea name="message" rows="4" required placeholder="Jelaskan secara rinci kendala atau kebutuhan Anda..." 
-                                      class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
-                                      :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">{{ old('message') }}</textarea>
-                        </div>
-
-                        <!-- CAPTCHA VERIFICATION (ANTI-BOT) -->
-                        <div class="space-y-1.5 pt-2">
-                            <label class="text-xs font-bold flex items-center gap-1.5" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
-                                <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
-                                <span>{{ __('Verifikasi Keamanan (Anti-Bot)') }}</span>
-                                <span class="text-rose-400">*</span>
-                            </label>
-                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                <div class="px-4 py-3 rounded-xl border font-mono font-extrabold text-sm tracking-wider select-none shrink-0 flex items-center gap-2"
-                                     :class="darkMode ? 'bg-slate-900/90 border-cyan-500/30 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-700'">
-                                    <i data-lucide="calculator" class="w-4 h-4 text-cyan-500"></i>
-                                    <span>{{ $captchaQuestion ?? '5 + 3' }} = ?</span>
+                    @if($faqs->count() > 0)
+                        <div class="space-y-3" x-data="{ openFaq: null }">
+                            @foreach($faqs as $index => $faq)
+                                <div class="rounded-2xl border overflow-hidden transition-all duration-300"
+                                     :class="darkMode ? 'bg-slate-900/70 border-slate-800 hover:border-cyan-500/40' : 'bg-slate-50/90 border-slate-200 hover:border-cyan-400'">
+                                    <button type="button"
+                                            @click="openFaq = (openFaq === {{ $index }} ? null : {{ $index }})"
+                                            class="w-full p-4 text-left font-bold flex justify-between items-center gap-3 text-xs sm:text-sm hover:text-cyan-500 transition-colors cursor-pointer"
+                                            :class="darkMode ? 'text-white' : 'text-slate-900'">
+                                        <span class="leading-snug">{{ $faq->question }}</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 shrink-0 transition-transform duration-300" :class="openFaq === {{ $index }} ? 'rotate-180 text-cyan-500' : 'text-slate-400'"></i>
+                                    </button>
+                                    <div x-show="openFaq === {{ $index }}" x-transition
+                                         class="p-4 pt-3 text-xs leading-relaxed border-t"
+                                         :class="darkMode ? 'text-slate-300 border-slate-800/80' : 'text-slate-600 border-slate-200/80'">
+                                        {{ $faq->answer }}
+                                    </div>
                                 </div>
-                                <input type="number" name="captcha_input" required placeholder="{{ __('Masukkan hasil penjumlahan angka di samping...') }}" 
-                                       class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
-                                       :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="space-y-3" x-data="{ openFaq: 0 }">
+                            <div class="rounded-2xl p-4 space-y-1.5 border"
+                                 :class="darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-slate-50/90 border-slate-200'">
+                                <h4 class="text-xs sm:text-sm font-extrabold" :class="darkMode ? 'text-white' : 'text-slate-900'">{{ __('Bagaimana cara mengajukan bantuan teknis / masalah jaringan?') }}</h4>
+                                <p class="text-xs leading-relaxed" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">{{ __('Anda dapat mengisi formulir tiket IT Helpdesk di samping atau menghubungi kontak resmi Unit TIK.') }}</p>
+                            </div>
+                            <div class="rounded-2xl p-4 space-y-1.5 border"
+                                 :class="darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-slate-50/90 border-slate-200'">
+                                <h4 class="text-xs sm:text-sm font-extrabold" :class="darkMode ? 'text-white' : 'text-slate-900'">{{ __('Apakah Ruang Lab Komputer bisa dipinjam untuk kegiatan pelatihan?') }}</h4>
+                                <p class="text-xs leading-relaxed" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">{{ __('Ya, Ruang Komputer dapat digunakan untuk workshop, sertifikasi, dan pelatihan dengan mengajukan surat izin penggunaan lab.') }}</p>
                             </div>
                         </div>
-
-                        <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/25 transition-all hover:scale-[1.01] uppercase tracking-wider flex items-center justify-center gap-2">
-                            <i data-lucide="send" class="w-4 h-4"></i>
-                            <span>{{ __('Kirim Tiket Helpdesk') }}</span>
-                        </button>
-                    </form>
+                    @endif
                 </div>
-            @endif
+
+                <!-- LAYOUT 2 (KANAN): FORMULIR TIKET HELPDESK / LIVE ASSISTANT -->
+                <div id="helpdesk" class="lg:col-span-7 scroll-mt-24 space-y-6">
+
+                    @if($showChatbotBannerOnLanding)
+                        <!-- INTERACTIVE LIVE ASSISTANT BANNER -->
+                        <div class="rounded-3xl p-6 sm:p-8 border text-center space-y-6 transition-all duration-300 relative overflow-hidden"
+                             :class="darkMode ? 'glass-card-dark glow-cyan border-cyan-500/30' : 'glass-card-light shadow-2xl border-cyan-200'">
+
+                            <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-cyan-500/30 border border-cyan-400/30">
+                                <i data-lucide="headphones" class="w-8 h-8 animate-bounce"></i>
+                            </div>
+
+                            <div class="space-y-3 max-w-xl mx-auto">
+                                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black border uppercase tracking-wider"
+                                     :class="darkMode ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                    <span>{{ __('Asisten Virtual IT Helpdesk') }}</span>
+                                </div>
+                                <h3 class="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight"
+                                    :class="darkMode ? 'text-white' : 'text-slate-900'">
+                                    {{ __('Layanan IT Helpdesk & Konsultasi Cepat') }}
+                                </h3>
+                                <p class="text-xs sm:text-sm leading-relaxed" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
+                                    {{ __('Dapatkan panduan solusi otomatis seputar akun SSO, jaringan Wi-Fi, sistem aplikasi, atau buat tiket pengaduan teknis secara langsung melalui Asisten Cerdas kami.') }}
+                                </p>
+                            </div>
+
+                            <div class="pt-1 flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <button type="button"
+                                        onclick="window.openItChatbot()"
+                                        @click="window.openItChatbot()"
+                                        class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-cyan-500/30 transition-all transform hover:scale-105 uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer">
+                                    <i data-lucide="message-square" class="w-5 h-5 text-slate-950"></i>
+                                    <span>{{ __('Buka Chat Asisten IT Helpdesk') }}</span>
+                                </button>
+                            </div>
+
+                            <div class="pt-4 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-[11px] font-semibold text-slate-500 border-t border-slate-800/40">
+                                <span class="flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Respon Cepat 24/7</span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i> Basis Data FAQ Resmi</span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="ticket" class="w-3.5 h-3.5 text-emerald-400"></i> Tiket Langsung ke Tim Teknis</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($showTicketFormOnLanding)
+                        <!-- FORMULIR TIKET HELPDESK MANUAL LENGKAP (3-LAYER SECURITY SHIELD) -->
+                        <div class="rounded-3xl p-6 sm:p-8 border space-y-6 transition-all duration-300 relative"
+                             :class="darkMode ? 'glass-card-dark glow-cyan border-slate-800' : 'glass-card-light shadow-xl border-slate-200'"
+                             x-data="{
+                                 captchaNum1: {{ $contactNum1 ?? 5 }},
+                                 captchaNum2: {{ $contactNum2 ?? 3 }},
+                                 captchaToken: '{{ $contactCaptchaToken ?? '' }}',
+                                 captchaInput: '',
+                                 isCaptchaRefreshing: false,
+                                 async refreshCaptcha() {
+                                     this.isCaptchaRefreshing = true;
+                                     try {
+                                         const res = await fetch('{{ route('contact.captcha-refresh') }}');
+                                         if (res.ok) {
+                                             const data = await res.json();
+                                             this.captchaNum1 = data.num1;
+                                             this.captchaNum2 = data.num2;
+                                             this.captchaToken = data.token;
+                                             this.captchaInput = '';
+                                         }
+                                     } catch (e) {
+                                         console.error('Failed to refresh contact captcha', e);
+                                     } finally {
+                                         this.isCaptchaRefreshing = false;
+                                         this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                                     }
+                                 }
+                             }">
+
+                            <div class="text-center space-y-2.5">
+                                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black border uppercase tracking-wider"
+                                     :class="darkMode ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'">
+                                    <i data-lucide="headphones" class="w-4 h-4"></i>
+                                    <span>{{ __('Formulir IT Support & Ticketing') }}</span>
+                                </div>
+                                <h3 class="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight"
+                                    :class="darkMode ? 'text-white' : 'text-slate-900'">
+                                    {{ __('Hubungi IT Helpdesk & Tim Operasional') }}
+                                </h3>
+                                <p class="text-xs sm:text-sm" :class="darkMode ? 'text-slate-400' : 'text-slate-600'">
+                                    {{ __('Kirimkan permintaan bantuan teknis, perbaikan jaringan, atau konsultasi server secara langsung.') }}
+                                </p>
+                            </div>
+
+                            @if(session('success'))
+                                <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-center"
+                                     :class="darkMode ? 'text-emerald-400' : 'text-emerald-700'">
+                                    {{ session('success') }}
+                                </div>
+                            @endif
+
+                            @if(session('captcha_error') || $errors->any())
+                                <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-xs font-bold text-center space-y-1"
+                                     :class="darkMode ? 'text-rose-400' : 'text-rose-600'">
+                                    @if(session('captcha_error'))
+                                        <p>{{ session('captcha_error') }}</p>
+                                    @endif
+                                    @foreach($errors->all() as $error)
+                                        <p>{{ $error }}</p>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <form action="{{ route('contact.submit') }}" method="POST" class="space-y-4">
+                                @csrf
+
+                                <!-- Lapis 1: Invisible Honeypot Trap (Perangkap Bot Otomatis) -->
+                                <div style="position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none;" aria-hidden="true">
+                                    <label for="contact_hp_website_title">Website Title</label>
+                                    <input type="text" id="contact_hp_website_title" name="_hp_website_title" tabindex="-1" autocomplete="off" value="">
+                                </div>
+
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Nama Lengkap / Instansi') }}</label>
+                                        <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Budi Santoso (Staf IT)"
+                                               class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
+                                               :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Email Resmi / Aktif') }}</label>
+                                        <input type="email" name="email" value="{{ old('email') }}" required placeholder="email@perusahaan.com"
+                                               class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
+                                               :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                                    </div>
+                                </div>
+
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Nomor Telepon / WhatsApp') }}</label>
+                                        <input type="text" name="phone" value="{{ old('phone') }}" placeholder="081234567890"
+                                               class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
+                                               :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Kategori Permintaan') }}</label>
+                                        <select name="subject" class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
+                                                :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">
+                                            <option value="Perbaikan Sistem Aplikasi Web" {{ old('subject') == 'Perbaikan Sistem Aplikasi Web' ? 'selected' : '' }}>{{ __('Perbaikan Sistem Aplikasi Web') }}</option>
+                                            <option value="Gangguan Jaringan & Wifi" {{ old('subject') == 'Gangguan Jaringan & Wifi' ? 'selected' : '' }}>{{ __('Gangguan Jaringan & Wifi') }}</option>
+                                            <option value="Penggunaan Ruang Komputer Lab" {{ old('subject') == 'Penggunaan Ruang Komputer Lab' ? 'selected' : '' }}>{{ __('Penggunaan Ruang Komputer Lab') }}</option>
+                                            <option value="Permintaan Server AWS/GCP/Private Cloud" {{ old('subject') == 'Permintaan Server AWS/GCP/Private Cloud' ? 'selected' : '' }}>{{ __('Permintaan Server AWS/GCP/Private Cloud') }}</option>
+                                            <option value="Konsultasi IT Umum" {{ old('subject') == 'Konsultasi IT Umum' ? 'selected' : '' }}>{{ __('Konsultasi IT Umum') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <label class="text-xs font-bold" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">{{ __('Rincian Pesan / Kendala Teknis') }}</label>
+                                    <textarea name="message" rows="4" required placeholder="Jelaskan secara rinci kendala atau kebutuhan Anda..."
+                                              class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
+                                              :class="darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'">{{ old('message') }}</textarea>
+                                </div>
+
+                                <!-- Lapis 2: Dynamic Math Verification (Tantangan Manusia Visual + Segarkan Soal) -->
+                                <div class="p-4 rounded-2xl border space-y-2.5 transition-colors"
+                                     :class="darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-slate-50/90 border-slate-200'">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label class="text-xs font-bold flex items-center gap-1.5" :class="darkMode ? 'text-slate-300' : 'text-slate-700'">
+                                            <i data-lucide="shield-check" class="w-4 h-4 text-cyan-500 shrink-0"></i>
+                                            <span>{{ __('Verifikasi Keamanan') }}</span>
+                                            <span class="text-rose-500">*</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                        <div class="px-3.5 py-2.5 rounded-xl border font-mono font-extrabold text-sm tracking-wider select-none shrink-0 flex items-center justify-between sm:justify-start gap-2.5"
+                                             :class="darkMode ? 'bg-slate-950 border-cyan-500/30 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-700'">
+                                            <div class="flex items-center gap-2">
+                                                <i data-lucide="calculator" class="w-4 h-4 text-cyan-500 shrink-0"></i>
+                                                <span x-text="captchaNum1 + ' + ' + captchaNum2 + ' = ?'">{{ ($contactNum1 ?? 5) . ' + ' . ($contactNum2 ?? 3) }} = ?</span>
+                                            </div>
+                                            <button type="button"
+                                                    @click="refreshCaptcha()"
+                                                    :disabled="isCaptchaRefreshing"
+                                                    title="{{ __('Segarkan Soal') }}"
+                                                    class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-sans font-bold border transition-colors cursor-pointer disabled:opacity-60"
+                                                    :class="darkMode ? 'bg-slate-900 border-slate-700 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/40' : 'bg-white border-cyan-200 text-cyan-700 hover:bg-cyan-100/70'">
+                                                <span class="inline-flex" :class="isCaptchaRefreshing ? 'animate-spin' : ''">
+                                                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                                </span>
+                                                <span>{{ __('Segarkan Soal') }}</span>
+                                            </button>
+                                        </div>
+                                        <input type="number"
+                                               name="captcha_input"
+                                               x-model="captchaInput"
+                                               required
+                                               placeholder="{{ __('Masukkan hasil penjumlahan angka di samping...') }}"
+                                               class="w-full px-4 py-3 rounded-xl text-xs focus:outline-none focus:border-cyan-500 transition-colors border"
+                                               :class="darkMode ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'">
+                                    </div>
+
+                                    <input type="hidden" name="captcha_num1" :value="captchaNum1">
+                                    <input type="hidden" name="captcha_num2" :value="captchaNum2">
+                                    <input type="hidden" name="captcha_token" :value="captchaToken">
+
+                                    
+                                </div>
+
+                                <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/25 transition-all hover:scale-[1.01] uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                    <span>{{ __('Kirim Tiket Helpdesk') }}</span>
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
+                </div>
+
+            </div>
 
         </div>
     </section>

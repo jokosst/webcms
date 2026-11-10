@@ -34,6 +34,14 @@ class SettingController extends Controller
             $inputs['lab_booking_enabled'] = '0';
         }
 
+        // Handle Landing Page & Header Helpdesk display mode settings
+        if (!isset($inputs['landing_helpdesk_mode']) || !in_array($inputs['landing_helpdesk_mode'], ['ticket_form', 'chatbot_banner', 'both'], true)) {
+            $inputs['landing_helpdesk_mode'] = 'ticket_form';
+        }
+        if (!isset($inputs['header_helpdesk_action']) || !in_array($inputs['header_helpdesk_action'], ['chatbot', 'scroll_form'], true)) {
+            $inputs['header_helpdesk_action'] = 'chatbot';
+        }
+
         foreach ($inputs as $key => $value) {
             SiteSetting::setKey($key, $value);
         }

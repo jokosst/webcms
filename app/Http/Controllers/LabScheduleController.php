@@ -107,6 +107,12 @@ class LabScheduleController extends Controller
         $isBookingEnabled = ($settings['lab_booking_enabled'] ?? '1') === '1';
         $closedMessage = $settings['lab_booking_closed_message'] ?? 'Mohon maaf, layanan pengajuan peminjaman laboratorium komputer sedang ditutup sementara. Silakan hubungi pengelola UPA TIK untuk informasi lebih lanjut.';
 
+        // Generate Math Captcha Anti-Bot
+        $captchaNum1 = rand(3, 9);
+        $captchaNum2 = rand(2, 8);
+        $captchaToken = hash_hmac('sha256', "{$captchaNum1}+{$captchaNum2}", config('app.key'));
+        session(['lab_captcha_answer' => $captchaNum1 + $captchaNum2]);
+
         return view('lab_schedule.index', compact(
             'profile',
             'settings',
@@ -122,8 +128,28 @@ class LabScheduleController extends Controller
             'approvedBookingsCount',
             'viewMode',
             'isBookingEnabled',
-            'closedMessage'
+            'closedMessage',
+            'captchaNum1',
+            'captchaNum2',
+            'captchaToken'
         ));
+    }
+
+    /**
+     * Refresh math captcha numbers and signed token asynchronously
+     */
+    public function refreshCaptcha(): \Illuminate\Http\JsonResponse
+    {
+        $num1 = rand(3, 9);
+        $num2 = rand(2, 8);
+        $token = hash_hmac('sha256', "{$num1}+{$num2}", config('app.key'));
+        session(['lab_captcha_answer' => $num1 + $num2]);
+
+        return response()->json([
+            'num1' => $num1,
+            'num2' => $num2,
+            'token' => $token,
+        ]);
     }
 
     public function store(Request $request)
@@ -133,6 +159,36 @@ class LabScheduleController extends Controller
             $closedMessage = SiteSetting::get('lab_booking_closed_message', 'Mohon maaf, layanan pengajuan peminjaman laboratorium komputer sedang ditutup sementara.');
             return back()->withInput()->with('error', $closedMessage);
         }
+
+        // 1. Honeypot check (anti-bot trap)
+        if ($request->filled('_hp_website_title')) {
+            return back()->withInput()->with('captcha_error', 'Permintaan Anda terdeteksi sebagai spam otomatis (bot).');
+        }
+
+        // 2. Anti-Bot Math Captcha verification
+        $request->validate([
+            'captcha_input' => 'required|integer',
+        ], [
+            'captcha_input.required' => 'Verifikasi keamanan (Anti-Bot) wajib diisi.',
+            'captcha_input.integer' => 'Hasil verifikasi anti-bot harus berupa angka.',
+        ]);
+
+        $captchaInput = (int) $request->input('captcha_input');
+        $num1 = (int) $request->input('captcha_num1');
+        $num2 = (int) $request->input('captcha_num2');
+        $token = (string) $request->input('captcha_token');
+
+        $expectedSum = $num1 + $num2;
+        $isValidToken = hash_equals(hash_hmac('sha256', "{$num1}+{$num2}", config('app.key')), $token);
+        $isSessionValid = session()->has('lab_captcha_answer') && $captchaInput === (int) session('lab_captcha_answer');
+
+        if ((!$isValidToken || $captchaInput !== $expectedSum) && !$isSessionValid) {
+            return back()
+                ->withInput()
+                ->with('captcha_error', 'Hasil penjumlahan verifikasi keamanan (Anti-Bot) tidak tepat. Silakan hitung dan coba lagi.');
+        }
+
+        session()->forget('lab_captcha_answer');
 
         $validated = $request->validate([
             'laboratory_ids' => 'nullable|array',

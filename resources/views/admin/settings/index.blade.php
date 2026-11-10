@@ -53,6 +53,8 @@
          x-data="{ 
             botActive: {{ old('chatbot_enabled', $settings['chatbot_enabled'] ?? '1') == '1' ? 'true' : 'false' }},
             aiActive: {{ old('chatbot_ai_enabled', $settings['chatbot_ai_enabled'] ?? '1') == '1' ? 'true' : 'false' }},
+            landingHelpdeskMode: '{{ old('landing_helpdesk_mode', $settings['landing_helpdesk_mode'] ?? 'ticket_form') }}',
+            headerHelpdeskAction: '{{ old('header_helpdesk_action', $settings['header_helpdesk_action'] ?? 'chatbot') }}',
             showApiKey: false,
             testingAi: false,
             aiTestResult: null,
@@ -257,6 +259,159 @@
                 <textarea name="chatbot_fallback_message" rows="2" class="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:border-cyan-500 focus:outline-none" placeholder="Mohon maaf, saya belum memiliki informasi lengkap...">{{ old('chatbot_fallback_message', $settings['chatbot_fallback_message'] ?? 'Wah, mohon maaf ya Kak, saya belum menemukan jawaban yang tepat dari data FAQ. Namun jangan khawatir, silakan klik tombol "Buat Tiket Support" di bawah agar segera ditindaklanjuti oleh petugas Helpdesk kami!') }}</textarea>
             </div>
         </div>
+
+        <!-- SUB-SECTION: PENGATURAN TAMPILAN LANDING PAGE & TOMBOL HEADER -->
+        <div class="pt-6 border-t border-slate-800 space-y-5">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="layout-template" class="w-4 h-4 text-cyan-400"></i>
+                        <span>Tampilan Tiket di Landing Page & Aksi Tombol Header</span>
+                    </h4>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Atur apa yang tampil pada bagian <code class="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono text-[11px]">#helpdesk</code> di halaman utama dan fungsi tombol <strong>IT Helpdesk</strong> di header.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Info banner if Chatbot Master is OFF -->
+            <div x-show="!botActive" x-transition class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2.5" style="display: none;">
+                <i data-lucide="info" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                <span>
+                    Karena <strong>Asisten IT Helpdesk (Chatbot & AI)</strong> saat ini <strong>NONAKTIF (OFF)</strong>, landing page otomatis menampilkan <strong>Formulir Tiket Helpdesk</strong> dan tombol header diarahkan ke formulir tersebut. Aktifkan Chatbot di atas agar Chat AI dapat diakses lewat tombol header secara bersamaan.
+                </span>
+            </div>
+
+            <!-- Setting 1: Landing Page #helpdesk Display Mode -->
+            <div class="space-y-2.5" :class="botActive ? 'opacity-100' : 'opacity-60 pointer-events-none'">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Tampilan Section Helpdesk di Landing Page
+                </label>
+                <input type="hidden" name="landing_helpdesk_mode" :value="landingHelpdeskMode">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- Option 1: Ticket Form Only (Default) -->
+                    <button type="button"
+                            @click="landingHelpdeskMode = 'ticket_form'"
+                            class="p-4 rounded-xl border text-left transition-all cursor-pointer space-y-1.5"
+                            :style="landingHelpdeskMode === 'ticket_form'
+                                ? 'background: rgba(6, 182, 212, 0.12); border-color: #06b6d4; box-shadow: 0 4px 16px rgba(6, 182, 212, 0.15);'
+                                : 'background: rgba(15, 23, 42, 0.7); border-color: #334155;'">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="ticket" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                <span>Formulir Tiket Saja</span>
+                            </span>
+                            <span class="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
+                                  :style="landingHelpdeskMode === 'ticket_form' ? 'border-color: #06b6d4;' : 'border-color: #64748b;'">
+                                <span x-show="landingHelpdeskMode === 'ticket_form'" class="w-1.5 h-1.5 rounded-full" style="background-color: #06b6d4;"></span>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Form Tiket Helpdesk tampil di landing page, sementara Chat AI tetap aktif di tombol header.
+                        </p>
+                    </button>
+
+                    <!-- Option 2: Chatbot Banner Only -->
+                    <button type="button"
+                            @click="landingHelpdeskMode = 'chatbot_banner'"
+                            class="p-4 rounded-xl border text-left transition-all cursor-pointer space-y-1.5"
+                            :style="landingHelpdeskMode === 'chatbot_banner'
+                                ? 'background: rgba(6, 182, 212, 0.12); border-color: #06b6d4; box-shadow: 0 4px 16px rgba(6, 182, 212, 0.15);'
+                                : 'background: rgba(15, 23, 42, 0.7); border-color: #334155;'">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                <span>Banner Chat AI Saja</span>
+                            </span>
+                            <span class="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
+                                  :style="landingHelpdeskMode === 'chatbot_banner' ? 'border-color: #06b6d4;' : 'border-color: #64748b;'">
+                                <span x-show="landingHelpdeskMode === 'chatbot_banner'" class="w-1.5 h-1.5 rounded-full" style="background-color: #06b6d4;"></span>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Menampilkan banner Asisten Virtual Chat AI dan menyembunyikan form tiket manual di landing page.
+                        </p>
+                    </button>
+
+                    <!-- Option 3: Both -->
+                    <button type="button"
+                            @click="landingHelpdeskMode = 'both'"
+                            class="p-4 rounded-xl border text-left transition-all cursor-pointer space-y-1.5"
+                            :style="landingHelpdeskMode === 'both'
+                                ? 'background: rgba(6, 182, 212, 0.12); border-color: #06b6d4; box-shadow: 0 4px 16px rgba(6, 182, 212, 0.15);'
+                                : 'background: rgba(15, 23, 42, 0.7); border-color: #334155;'">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                <span>Tampilkan Keduanya</span>
+                            </span>
+                            <span class="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
+                                  :style="landingHelpdeskMode === 'both' ? 'border-color: #06b6d4;' : 'border-color: #64748b;'">
+                                <span x-show="landingHelpdeskMode === 'both'" class="w-1.5 h-1.5 rounded-full" style="background-color: #06b6d4;"></span>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Menampilkan Banner Chat AI dan Formulir Tiket Helpdesk secara bersamaan di landing page.
+                        </p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Setting 2: Header IT Helpdesk Button Action -->
+            <div class="space-y-2.5" :class="botActive ? 'opacity-100' : 'opacity-60 pointer-events-none'">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Aksi Tombol Header "IT Helpdesk" (Desktop & Mobile)
+                </label>
+                <input type="hidden" name="header_helpdesk_action" :value="headerHelpdeskAction">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Header Action 1: Open Chat AI -->
+                    <button type="button"
+                            @click="headerHelpdeskAction = 'chatbot'"
+                            class="p-3.5 rounded-xl border text-left transition-all cursor-pointer space-y-1"
+                            :style="headerHelpdeskAction === 'chatbot'
+                                ? 'background: rgba(99, 102, 241, 0.15); border-color: #6366f1; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);'
+                                : 'background: rgba(15, 23, 42, 0.7); border-color: #334155;'">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                <span>Buka Chat AI Asisten</span>
+                            </span>
+                            <span class="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
+                                  :style="headerHelpdeskAction === 'chatbot' ? 'border-color: #818cf8;' : 'border-color: #64748b;'">
+                                <span x-show="headerHelpdeskAction === 'chatbot'" class="w-1.5 h-1.5 rounded-full" style="background-color: #818cf8;"></span>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">
+                            Klik tombol header langsung memunculkan popup Chat AI (bisa dari halaman mana saja).
+                        </p>
+                    </button>
+
+                    <!-- Header Action 2: Scroll to Ticket Form -->
+                    <button type="button"
+                            @click="headerHelpdeskAction = 'scroll_form'"
+                            class="p-3.5 rounded-xl border text-left transition-all cursor-pointer space-y-1"
+                            :style="headerHelpdeskAction === 'scroll_form'
+                                ? 'background: rgba(99, 102, 241, 0.15); border-color: #6366f1; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);'
+                                : 'background: rgba(15, 23, 42, 0.7); border-color: #334155;'">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="arrow-down-circle" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                <span>Arahkan ke Form Tiket (#helpdesk)</span>
+                            </span>
+                            <span class="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0"
+                                  :style="headerHelpdeskAction === 'scroll_form' ? 'border-color: #818cf8;' : 'border-color: #64748b;'">
+                                <span x-show="headerHelpdeskAction === 'scroll_form'" class="w-1.5 h-1.5 rounded-full" style="background-color: #818cf8;"></span>
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">
+                            Klik tombol header akan mengarahkan pengunjung ke bagian #helpdesk di landing page.
+                        </p>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Section Layanan Fasilitas & Laboratorium Komputer -->
@@ -269,20 +424,39 @@
 
         <div class="space-y-4">
             <!-- Toggle Aktif/Nonaktif -->
-            <div class="p-4 rounded-xl border flex items-center justify-between transition-colors"
+            <div class="p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors"
                  :class="labActive ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-rose-950/25 border-rose-500/40'">
                 <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider" :class="labActive ? 'text-emerald-300' : 'text-rose-300'">
+                    <h4 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2" :class="labActive ? 'text-emerald-300' : 'text-rose-300'">
                         <span x-text="labActive ? 'Layanan Online Aktif (Dibuka)' : 'Layanan Online Nonaktif (Ditutup Sementara)'"></span>
                     </h4>
                     <p class="text-xs text-slate-400 mt-0.5">
                         Izinkan atau tutup sementara formulir pengajuan reservasi lab secara online oleh civitas akademika.
                     </p>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="lab_booking_enabled" value="1" x-model="labActive" class="sr-only peer">
-                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                </label>
+
+                <!-- Segmented Toggle Control Layanan Lab -->
+                <div class="inline-flex items-center gap-2 flex-shrink-0 w-fit bg-slate-800/90 p-1.5 rounded-2xl border border-slate-700/80 shadow-inner">
+                    <input type="hidden" name="lab_booking_enabled" :value="labActive ? '1' : '0'">
+
+                    <!-- Tombol AKTIF -->
+                    <button type="button"
+                            @click="labActive = true"
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                            :style="labActive ? 'background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);' : 'background: transparent; color: #94a3b8;'">
+                        <span class="w-2 h-2 rounded-full" :style="labActive ? 'background-color: #ffffff;' : 'background-color: #64748b;'"></span>
+                        <span>Aktif (ON)</span>
+                    </button>
+
+                    <!-- Tombol NONAKTIF -->
+                    <button type="button"
+                            @click="labActive = false"
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+                            :style="!labActive ? 'background: linear-gradient(135deg, #e11d48, #be123c); color: #ffffff; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);' : 'background: transparent; color: #64748b;'">
+                        <span class="w-2 h-2 rounded-full" :style="!labActive ? 'background-color: #ffffff;' : 'background-color: #475569;'"></span>
+                        <span>Nonaktif (OFF)</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Pesan Penutupan Kustom -->
