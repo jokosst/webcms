@@ -7,9 +7,9 @@ use App\Models\ChatbotLog;
 use App\Models\Faq;
 use App\Models\InboxLead;
 use App\Models\SiteSetting;
+use App\Services\GeminiAiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -552,29 +552,14 @@ class ChatbotController extends Controller
      */
     private function generateAiResponse(string $userQuery, string $botName, array $settings): ?string
     {
-        $apiKey = $settings['chatbot_gemini_api_key'] ?? '';
-        if (empty($apiKey)) {
-            return null;
-        }
-
-        $primaryModel = !empty($settings['chatbot_ai_model']) ? $settings['chatbot_ai_model'] : 'gemini-3.5-flash-lite';
-        // Auto resilience: try primary model, then failover to other supported models if 503/404 occurs
-        $candidateModels = array_values(array_unique([$primaryModel, 'gemini-3.5-flash-lite', 'gemini-3.6-flash']));
-
+        $geminiService = app(GeminiAiService::class);
         $customPrompt = $settings['chatbot_ai_system_prompt'] ?? "Kamu adalah Asisten Cerdas IT Helpdesk UPA. TIK Universitas Tanjungpura (Pontianak). Jawablah pertanyaan pengunjung secara ramah, sopan, jelas, dan membantu dalam Bahasa Indonesia.";
-
-        // Build grounded FAQ context
-        $faqs = Faq::all();
-        $faqContext = "";
-        foreach ($faqs as $i => $faq) {
-            $num = $i + 1;
-            $faqContext .= "FAQ #{$num}:\nQ: {$faq->question}\nA: " . strip_tags($faq->answer) . "\n\n";
-        }
+        $faqContext = $geminiService->buildFaqContext();
 
         $systemPrompt = "{$customPrompt}\n\n"
             . "PANDUAN & BASIS PENGETAHUAN RESMI UPA. TIK UNIVERSITAS TANJUNGPURA:\n"
             . "===============================================================\n"
-            . "{$faqContext}\n"
+            . "{$faqContext}\n\n"
             . "===============================================================\n\n"
             . "PETUNJUK JAWABAN:\n"
             . "1. Gunakan Bahasa Indonesia yang ramah, sopan, dan solutif (panggil pengguna dengan 'Kakak' atau 'Kak').\n"
@@ -584,51 +569,15 @@ class ChatbotController extends Controller
             . "5. Gunakan format Markdown yang rapi (gunakan bold **kata penting**, list nomor/bullet jika ada urutan langkah).\n"
             . "6. Jangan mengarang kontak atau link internal yang tidak terdaftar.";
 
-        foreach ($candidateModels as $model) {
-            try {
-                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
-                
-                $response = Http::timeout(20)
-                    ->withHeaders([
-                        'Content-Type' => 'application/json',
-                    ])
-                    ->post($url, [
-                        'contents' => [
-                            [
-                                'parts' => [
-                                    [
-                                        'text' => $systemPrompt . "\n\nPertanyaan Pengguna: " . $userQuery
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'generationConfig' => [
-                            'temperature' => 0.5,
-                            'maxOutputTokens' => 2048,
-                        ]
-                    ]);
-
-                if ($response->successful()) {
-                    $parts = $response->json('candidates.0.content.parts') ?? [];
-                    $aiText = '';
-                    foreach ($parts as $part) {
-                        if (isset($part['text']) && empty($part['thought'])) {
-                            $aiText .= $part['text'];
-                        }
-                    }
-                    $aiText = trim($aiText);
-                    if (!empty($aiText)) {
-                        return $aiText;
-                    }
-                }
-
-                Log::warning("Gemini AI ({$model}) returned status {$response->status()} - Body: " . substr($response->body(), 0, 150));
-            } catch (\Throwable $e) {
-                Log::warning("Gemini AI ({$model}) request exception: " . $e->getMessage());
-            }
-        }
-
-        return null;
+        return $geminiService->tryGenerateContent(
+            $systemPrompt . "\n\nPertanyaan Pengguna: " . $userQuery,
+            [
+                'temperature' => 0.5,
+                'maxOutputTokens' => 2048,
+                'timeout' => 20,
+            ],
+            $settings
+        );
     }
 
     /**

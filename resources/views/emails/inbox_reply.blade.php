@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $replySubject }}</title>
+    <style>
+        .reply-rich-content p { margin: 0 0 12px 0; }
+        .reply-rich-content p:last-child { margin-bottom: 0; }
+        .reply-rich-content ul, .reply-rich-content ol { margin: 8px 0 12px 0; padding-left: 22px; }
+        .reply-rich-content li { margin-bottom: 4px; }
+        .reply-rich-content blockquote { border-left: 3px solid #06b6d4; margin: 12px 0; padding: 6px 12px; color: #475569; background: #f8fafc; }
+        .reply-rich-content a { color: #0284c7; text-decoration: underline; }
+        .reply-rich-content table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .reply-rich-content th, .reply-rich-content td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; }
+        .reply-rich-content th { background-color: #f1f5f9; font-weight: bold; }
+        .reply-rich-content figure.image { margin: 12px 0; text-align: center; }
+        .reply-rich-content img { max-width: 100%; height: auto; border-radius: 8px; display: inline-block; margin: 6px 0; }
+        .reply-rich-content figcaption { font-size: 12px; color: #64748b; margin-top: 4px; }
+    </style>
 </head>
 <body style="font-family: Arial, Helvetica, sans-serif; background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 24px;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
@@ -25,8 +39,15 @@
             <td style="padding: 32px;">
                 <p style="font-size: 15px; margin-top: 0;">Halo <strong>{{ $lead->name }}</strong>,</p>
 
-                <div style="font-size: 14px; line-height: 1.7; color: #334155; margin: 20px 0;">
-                    {!! nl2br(e($replyMessage)) !!}
+                @php
+                    $hasHtmlReply = $replyMessage !== strip_tags($replyMessage);
+                @endphp
+                <div class="reply-rich-content" style="font-size: 14px; line-height: 1.7; color: #334155; margin: 20px 0;">
+                    @if($hasHtmlReply)
+                        {!! $replyMessage !!}
+                    @else
+                        {!! nl2br(e($replyMessage)) !!}
+                    @endif
                 </div>
 
                 <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0;">

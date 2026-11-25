@@ -112,7 +112,9 @@ Route::prefix('dalam')->name('admin.')->group(function () {
             Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
             Route::get('/inbox/export/excel', [InboxController::class, 'exportExcel'])->name('inbox.export.excel');
             Route::get('/inbox/export/pdf', [InboxController::class, 'exportPdf'])->name('inbox.export.pdf');
+            Route::post('/inbox/upload-image', [InboxController::class, 'uploadImage'])->name('inbox.upload-image');
             Route::get('/inbox/{inboxLead}', [InboxController::class, 'show'])->name('inbox.show');
+            Route::post('/inbox/{inboxLead}/ai-draft', [InboxController::class, 'aiDraft'])->name('inbox.ai-draft');
             Route::post('/inbox/{inboxLead}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
             Route::post('/inbox/{inboxLead}/reply-gmail-web', [InboxController::class, 'replyGmailWeb'])->name('inbox.reply-gmail-web');
             Route::patch('/inbox/{inboxLead}/status', [InboxController::class, 'updateStatus'])->name('inbox.status');

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Mail\InboxReplyMail;
 use App\Models\CompanyProfile;
 use App\Models\InboxLead;
+use App\Services\GeminiAiService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -59,11 +61,18 @@ class InboxController extends Controller
     {
         $validated = $request->validate([
             'subject' => 'required|string|max:255',
-            'reply_message' => 'required|string|max:5000',
+            'reply_message' => 'required|string|max:20000',
         ], [
             'subject.required' => 'Subjek email balasan wajib diisi.',
             'reply_message.required' => 'Isi pesan balasan tidak boleh kosong.',
         ]);
+
+        $replyMessage = $this->sanitizeReplyHtml($validated['reply_message']);
+        if ($this->htmlToPlainText($replyMessage) === '' && !preg_match('/<img\b/i', $replyMessage)) {
+            return redirect()->route('admin.inbox.show', $inboxLead->id)
+                ->withErrors(['reply_message' => 'Isi pesan balasan tidak boleh kosong.'])
+                ->withInput();
+        }
 
         try {
             $mailerDriver = config('mail.default', env('MAIL_MAILER', 'smtp'));
@@ -73,7 +82,7 @@ class InboxController extends Controller
                 $gmailApi = new \App\Services\GmailApiService();
                 $htmlContent = view('emails.inbox_reply', [
                     'replySubject' => $validated['subject'],
-                    'replyMessage' => $validated['reply_message'],
+                    'replyMessage' => $replyMessage,
                     'lead' => $inboxLead,
                     'profile' => \App\Models\CompanyProfile::first(),
                 ])->render();
@@ -83,7 +92,7 @@ class InboxController extends Controller
                 // Send email via standard SMTP
                 Mail::to($inboxLead->email)->send(new InboxReplyMail(
                     $validated['subject'],
-                    $validated['reply_message'],
+                    $replyMessage,
                     $inboxLead
                 ));
             }
@@ -91,7 +100,7 @@ class InboxController extends Controller
             $inboxLead->update([
                 'status' => 'replied',
                 'reply_subject' => $validated['subject'],
-                'reply_message' => $validated['reply_message'],
+                'reply_message' => $replyMessage,
                 'replied_at' => now(),
             ]);
 
@@ -108,7 +117,7 @@ class InboxController extends Controller
     {
         $validated = $request->validate([
             'subject' => 'nullable|string|max:255',
-            'reply_message' => 'nullable|string|max:5000',
+            'reply_message' => 'nullable|string|max:20000',
         ]);
 
         $profile = CompanyProfile::first();
@@ -116,10 +125,16 @@ class InboxController extends Controller
         $tagline = $profile->tagline ?? 'Pusat Pengelolaan Sistem Informasi & Jaringan';
 
         $subject = !empty($validated['subject']) ? $validated['subject'] : ('Re: ' . ($inboxLead->subject ?? 'Tanggapan Pesan Helpdesk'));
-        $replyMessage = !empty($validated['reply_message']) ? $validated['reply_message'] : 'Terima kasih telah menghubungi kami. Mengenai pesan yang Anda sampaikan, berikut tanggapan dari tim kami.';
+        $sanitizedHtml = !empty($validated['reply_message']) ? $this->sanitizeReplyHtml($validated['reply_message']) : '';
+        $plainReplyText = $this->htmlToPlainText($sanitizedHtml);
+
+        $defaultGreeting = 'Terima kasih telah menghubungi kami. Mengenai pesan yang Anda sampaikan, berikut tanggapan dari tim kami.';
+        $hasContent = $plainReplyText !== '' || preg_match('/<img\b/i', $sanitizedHtml);
+        $replyMessageForDb = $hasContent ? $sanitizedHtml : $defaultGreeting;
+        $replyMessageForGmail = $hasContent ? $plainReplyText : $defaultGreeting;
 
         $body = "Halo {$inboxLead->name},\n\n";
-        $body .= "{$replyMessage}\n\n";
+        $body .= "{$replyMessageForGmail}\n\n";
         $body .= "==================================================\n";
         $body .= "{$companyName}\n";
         $body .= "{$tagline}\n";
@@ -133,7 +148,7 @@ class InboxController extends Controller
         $inboxLead->update([
             'status' => 'replied',
             'reply_subject' => $subject,
-            'reply_message' => $replyMessage,
+            'reply_message' => $replyMessageForDb,
             'replied_at' => now(),
         ]);
 
@@ -145,11 +160,126 @@ class InboxController extends Controller
             . "&su=" . urlencode($subject)
             . "&body=" . urlencode($body);
 
-        // Google Account Chooser URL forces Google Accounts to select/switch to tik@untan.ac.id
+        // Google Account Chooser URL forces Google Accounts to select/switch to configured email
         $accountChooserUrl = "https://accounts.google.com/AccountChooser?Email=" . urlencode($gmailUser)
             . "&continue=" . urlencode($composeUrl);
 
         return redirect()->away($accountChooserUrl);
+    }
+
+    /**
+     * Handle CKEditor image upload for inbox email replies.
+     */
+    public function uploadImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'upload' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ], [
+            'upload.required' => 'File gambar wajib dipilih.',
+            'upload.image' => 'File yang diunggah harus berupa gambar.',
+            'upload.mimes' => 'Format gambar yang didukung: JPEG, PNG, JPG, GIF, atau WebP.',
+            'upload.max' => 'Ukuran gambar maksimal 5 MB.',
+        ]);
+
+        $path = $request->file('upload')->store('inbox-replies', 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
+    }
+
+    /**
+     * Generate or reformat an alternative inbox reply draft using Gemini AI.
+     */
+    public function aiDraft(Request $request, InboxLead $inboxLead, GeminiAiService $geminiAiService): JsonResponse
+    {
+        $validated = $request->validate([
+            'mode' => 'required|in:auto_draft,polish,steps,shorten',
+            'tone' => 'nullable|in:formal,friendly,concise',
+            'instruction' => 'nullable|string|max:2000',
+            'current_html' => 'nullable|string|max:20000',
+        ]);
+
+        $mode = $validated['mode'];
+        $instruction = trim((string) ($validated['instruction'] ?? ''));
+        $currentHtml = (string) ($validated['current_html'] ?? '');
+
+        if (in_array($mode, ['polish', 'steps', 'shorten'], true)
+            && $this->htmlToPlainText($currentHtml) === ''
+            && $instruction === ''
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tuliskan dulu isi pesan di editor atau catatan singkat di kolom arahan sebelum meminta AI merapikan format.',
+            ], 422);
+        }
+
+        try {
+            $result = $geminiAiService->draftInboxReply($inboxLead, [
+                'mode' => $mode,
+                'tone' => $validated['tone'] ?? 'formal',
+                'instruction' => $instruction,
+                'current_html' => $currentHtml,
+            ]);
+
+            $sanitizedDraft = $this->sanitizeReplyHtml($result['draft_html']);
+            if ($this->htmlToPlainText($sanitizedDraft) === '' && !preg_match('/<img\b/i', $sanitizedDraft)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI tidak menghasilkan draf teks yang valid. Silakan coba lagi.',
+                ], 422);
+            }
+
+            return response()->json([
+                'success' => true,
+                'draft_html' => $sanitizedDraft,
+                'model' => $result['model'],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Sanitize rich-text HTML from CKEditor for safe storage and HTML email delivery.
+     */
+    private function sanitizeReplyHtml(string $html): string
+    {
+        $withoutBlocks = preg_replace('/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/i', '', $html) ?? $html;
+
+        $allowedTags = '<p><br><strong><b><em><i><u><s><ul><ol><li><blockquote><a><h1><h2><h3><h4><figure><figcaption><img><table><thead><tbody><tr><th><td><hr>';
+        $clean = strip_tags($withoutBlocks, $allowedTags);
+
+        // Strip inline JS event attributes and unsafe URI schemes
+        $clean = preg_replace('/\s+on[a-z]+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $clean) ?? $clean;
+        $clean = preg_replace('/(href|src)\s*=\s*(["\'])\s*(?:javascript|vbscript|data):.*?\2/i', '$1=$2#$2', $clean) ?? $clean;
+
+        return trim($clean);
+    }
+
+    /**
+     * Convert CKEditor HTML to clean readable plain text (for Gmail Web compose URL & empty checks).
+     */
+    private function htmlToPlainText(string $html): string
+    {
+        if ($html === '') {
+            return '';
+        }
+
+        $text = preg_replace('/<img\b[^>]*\bsrc\s*=\s*(["\'])([^"\']+)\1[^>]*>/i', "\n[Gambar: $2]\n", $html) ?? $html;
+        $text = preg_replace('/<\s*br\s*\/?>/i', "\n", $text) ?? $text;
+        $text = preg_replace('/<\/(p|div|h[1-6]|blockquote|tr|figure)>/i', "\n\n", $text) ?? $text;
+        $text = preg_replace('/<\s*li[^>]*>/i', '• ', $text) ?? $text;
+        $text = preg_replace('/<\/li>/i', "\n", $text) ?? $text;
+        $text = strip_tags($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = str_replace("\u{00A0}", ' ', $text);
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text);
     }
 
     public function updateStatus(Request $request, InboxLead $inboxLead): RedirectResponse

@@ -32,7 +32,6 @@ Route::prefix('v1')->group(function () {
     Route::get('/team-members', [TeamController::class, 'index']);
     Route::get('/testimonials', [TestimonialController::class, 'index']);
     Route::post('/contact', [ContactController::class, 'store']);
-    Route::get('/settings', [SiteSettingController::class, 'index']);
 
     // IT Helpdesk Smart Chatbot API Routes (Rate limited for security)
     Route::prefix('chatbot')->group(function () {
