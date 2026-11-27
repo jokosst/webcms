@@ -39,6 +39,9 @@ Route::post('/articles/{article}/comment', [HomeController::class, 'submitArticl
 Route::get('/pemdi', function () {
     return view('pemdi');
 });
+Route::get('/sigap-tppo', function () {
+    return view('sigap-tppo');
+});
 
 // Public Lab Schedule & Booking Routes
 Route::get('/jadwal-lab', [LabScheduleController::class, 'index'])->name('lab-schedule.index');
