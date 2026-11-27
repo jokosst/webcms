@@ -497,7 +497,7 @@
   <header class="sticky top-0 z-[1000]">
     <!-- Top Bar -->
     <div class="hidden lg:block bg-[#5c0505] border-b border-red-900/60">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between py-2 text-xs text-white">
           <ul class="flex items-center gap-5 m-0 p-0 list-none">
             <li class="flex items-center gap-2">
@@ -512,7 +512,7 @@
             </li>
             <li class="flex items-center gap-2 border-l border-white/20 pl-5">
               <i class="fa-solid fa-shield-halved text-amber-300"></i>
-              <span>Hotline Darurat: <strong>Polri 110 • SAPA 129</strong></span>
+              <span>Hotline Darurat: <strong>Polri 110</strong></span>
             </li>
           </ul>
 
@@ -522,27 +522,27 @@
 
     <!-- Main Navbar -->
     <nav class="bg-white/95 backdrop-blur-md border-b border-red-100 shadow-sm" aria-label="Navigasi Utama">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between py-2.5 gap-4">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-3 gap-6 xl:gap-10">
           <!-- Brand Logo -->
-          <a href="#beranda" class="flex items-center gap-3 group">
+          <a href="#beranda" class="flex items-center gap-3.5 sm:gap-4 group shrink-0 xl:pr-4 2xl:pr-8">
             <span
               class="logo-squircle w-12 h-12 shadow-md shadow-red-900/20 group-hover:scale-105 transition-transform">
               <img data-sigap-logo src="" alt="Logo SIGAP-TPPO" />
             </span>
-            <div class="leading-tight">
+            <div class="leading-tight space-y-0.5">
               <div class="text-lg sm:text-xl font-extrabold tracking-tight text-[#7c0a0a] flex items-center gap-1.5">
                 SIGAP-TPPO
 
               </div>
               <div class="text-[11px] font-medium text-slate-500 hidden sm:block">
-                Geotaging Aktivitas Perbatasan
+                Sistem Informasi Geotaging Aktivitas Perbatasan
               </div>
             </div>
           </a>
 
           <!-- Desktop Menu -->
-          <div class="hidden xl:flex items-center gap-6 shrink-0">
+          <div class="hidden xl:flex items-center gap-5 xl:gap-6 2xl:gap-7 shrink-0 xl:ml-4 2xl:ml-8">
             <a href="#beranda" class="nav-link-item active">Beranda</a>
             <a href="#alur-kerja" class="nav-link-item">Alur Kerja</a>
             <a href="#tentang" class="nav-link-item">Tentang</a>
@@ -552,7 +552,7 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="hidden sm:flex items-center gap-2.5 shrink-0">
+          <div class="hidden sm:flex items-center gap-3 shrink-0">
             <button type="button" onclick="openModalById('downloadDialog')"
               class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-200 bg-red-50/70 hover:bg-red-100 text-[#8b0d0d] font-bold text-xs whitespace-nowrap transition-colors">
               <i class="fa-solid fa-mobile-screen-button"></i>
@@ -776,7 +776,7 @@
               <h3 class="text-lg font-bold text-slate-900 mb-2">Verifikasi &amp; Tindak Tepat</h3>
               <p class="text-sm text-slate-600 leading-relaxed">
                 Laporan dipetakan untuk riset analisis kerawanan perbatasan FT UNTAN dan mendukung koordinasi respon
-                cepat Gugus Tugas TPPO.
+                cepat Kepolisian Daerah Kalimantan Barat - TPPO.
               </p>
             </div>
           </div>
@@ -844,7 +844,7 @@
                 <a href="tel:110"
                   class="text-white hover:text-amber-300 transition-colors text-sm font-semibold inline-flex items-center gap-2">
                   <i class="fa-solid fa-phone-volume text-amber-300"></i>
-                  <span>Darurat: 110 / SAPA 129</span>
+                  <span>Darurat: 110</span>
                 </a>
               </div>
             </div>
@@ -926,7 +926,7 @@
     <section class="py-10 bg-white border-y border-red-100 overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-center">
         <span class="text-xs uppercase font-bold tracking-widest text-slate-400">
-          Sinergi Akademisi, Gugus Tugas TPPO &amp; Kawasan Perbatasan Kalimantan Barat
+          Sinergi Akademisi FT UNTAN, Kepolisian Daerah Kalbar-TPPO &amp; Kawasan Perbatasan Kalimantan Barat
         </span>
       </div>
       <div class="relative overflow-hidden">
@@ -955,11 +955,11 @@
             </div>
             <div
               class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 font-bold text-sm whitespace-nowrap">
-              <i class="fa-solid fa-shield-halved text-lg text-[#8b0d0d]"></i> Gugus Tugas TPPO Kalbar
+              <i class="fa-solid fa-shield-halved text-lg text-[#8b0d0d]"></i> Kepolisian Daerah Kalbar - TPPO
             </div>
             <div
               class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-red-50/70 border border-red-100 text-[#7c0a0a] font-bold text-sm whitespace-nowrap">
-              <i class="fa-solid fa-phone-volume text-lg"></i> Layanan SAPA 129 &amp; Polri 110
+              <i class="fa-solid fa-phone-volume text-lg"></i> Layanan Polri 110
             </div>
           </div>
           <!-- Set 2 (duplicate for seamless loop) -->
@@ -986,11 +986,11 @@
             </div>
             <div
               class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 font-bold text-sm whitespace-nowrap">
-              <i class="fa-solid fa-shield-halved text-lg text-[#8b0d0d]"></i> Gugus Tugas TPPO Kalbar
+              <i class="fa-solid fa-shield-halved text-lg text-[#8b0d0d]"></i> Kepolisian Daerah Kalbar-TPPO
             </div>
             <div
               class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-red-50/70 border border-red-100 text-[#7c0a0a] font-bold text-sm whitespace-nowrap">
-              <i class="fa-solid fa-phone-volume text-lg"></i> Layanan SAPA 129 &amp; Polri 110
+              <i class="fa-solid fa-phone-volume text-lg"></i> Layanan Polri 110
             </div>
           </div>
         </div>
@@ -1355,7 +1355,7 @@
                   <div class="font-extrabold text-white text-sm mb-0.5">Kerahasiaan &amp; Keamanan Pelapor Terjaga</div>
                   Data koordinat dan laporan digunakan untuk pemetaan kewaspadaan serta penerusan koordinasi. Jika dalam
                   kondisi darurat mengancam keselamatan jiwa, segera hubungi <strong class="text-amber-300">Polri
-                    110</strong> atau <strong class="text-amber-300">SAPA 129</strong>.
+                    110</strong>.
                 </div>
               </div>
             </div>
@@ -1613,10 +1613,7 @@
               <i class="fa-solid fa-phone-volume text-amber-300 w-4"></i>
               <span><strong>Polri Call Center:</strong> 110</span>
             </li>
-            <li class="flex items-center gap-2.5 text-rose-100">
-              <i class="fa-solid fa-headset text-amber-300 w-4"></i>
-              <span><strong>SAPA KemenPPPA:</strong> 129</span>
-            </li>
+           
             <li class="flex items-center gap-2.5 text-rose-100">
               <i class="fa-solid fa-passport text-amber-300 w-4"></i>
               <span><strong>BP2MI Crisis Center:</strong> 0800-1000</span>
@@ -1834,7 +1831,7 @@
       </div>
       <p class="text-xs text-slate-600 leading-relaxed">
         Terima kasih atas partisipasi Anda menjaga perbatasan Kalimantan Barat. Untuk kondisi darurat segera, hubungi
-        <strong>Polri 110</strong> atau <strong>SAPA 129</strong>.
+        <strong>Polri 110</strong>.
       </p>
       <div class="flex flex-wrap justify-end gap-2">
         <form method="dialog">
